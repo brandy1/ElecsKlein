@@ -97,7 +97,7 @@ namespace SL_Tek_Studio_Pro
             }
             catch (Exception ex)
             {
-                
+                Log.f(this.GetType().FullName,"CommClose() Error: " + ex.Message);
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -31,16 +32,27 @@ namespace SL_Tek_Studio_Pro
             }
         }
 
+        public void copyIniToDst()
+        {
+#if (VISASUPPORT)
+            FileInfo file = new FileInfo(_filepath);
+            string context = Properties.Resources.Default_Config_V01;
+            StreamWriter sw = file.CreateText();
+            sw.Write(context);
+            sw.Close();
+#endif
+        }
 
 
         public void IniWriteValue(string Section, string Key, string Value)
         {
             WritePrivateProfileString(Section, Key, Value, _filepath);
         }
+
         public string IniReadValue(string Section, string Key)
         {
             StringBuilder temp = new StringBuilder(255);
-            int i = GetPrivateProfileString(Section, Key, "", temp, 255, _filepath);
+            GetPrivateProfileString(Section, Key, "", temp, 255, _filepath);
             return temp.ToString();
         }
 

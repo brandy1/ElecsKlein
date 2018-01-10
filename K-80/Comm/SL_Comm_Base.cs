@@ -20,49 +20,41 @@ namespace SL_Tek_Studio_Pro
         internal const string DDR3SEL = "DDR3SEL";
         internal const string SPI_RDDUMMYCLK = "SPI_RDDUMMYCLK";
         internal const string SPI_WRCLKH_L = "SPI_WRCLKH_L";
-
         internal const string SPI_RDCLKH_L = "SPI_RDCLKH_L";
         internal const string CS123SEL = "CS123SEL";
         internal const string I2C_STOP_START = "I2C_STOP_START";
         internal const string I2C_SCKH_L = "I2C_SCKH_L";
         internal const string I2C_RDBYTE_CNT = "I2C_RDBYTE_CNT";
-
         internal const string INTERFACEMODE = "INTERFACEMODE";
         internal const string RGBMODE_POLARITY = "RGBMODE_POLARITY";
         internal const string RGB_TH = "RGB_TH";
         internal const string RGB_TV = "RGB_TV";
         internal const string RGB_THDS = "RGB_THDS";
-
         internal const string RGB_TVDS = "RGB_TVDS";
         internal const string RGB_THBP = "RGB_THBP";
         internal const string RGB_TVBP = "RGB_TVBP";
         internal const string RGB_THPW = "RGB_THPW";
         internal const string RGB_TVPW = "RGB_TVPW";
-
         internal const string DDR3_1ADDR = "DDR3_1ADDR";
         internal const string DDR3_3ADDR = "DDR3_3ADDR";
         internal const string RGB_NORMALDATA = "RGB_NORMALDATA";
         internal const string SSD2828_BANKEN_MODESET = "SSD2828_BANKEN_MODESET";
         internal const string SSD2828_BANKCOLOR_SHUTDOWN = "SSD2828_BANKCOLOR_SHUTDOWN";
-
         internal const string REG_2828BX_WRRDEN = "REG_2828BX_WRRDEN";
         internal const string REG_2828BX_SPICSX = "REG_2828BX_SPICSX";
         internal const string RGB_TH_2828BX = "RGB_TH_2828BX";
         internal const string RGB_TV_2828BX = "RGB_TV_2828BX";
         internal const string RGB_THDS_2828BX = "RGB_THDS_2828BX";
-
         internal const string RGB_TVDS_2828BX = "RGB_TVDS_2828BX";
         internal const string RGB_THBP_2828BX = "RGB_THBP_2828BX";
         internal const string RGB_TVBP_2828BX = "RGB_TVBP_2828BX";
         internal const string RGB_THPW_2828BX = "RGB_THPW_2828BX";
         internal const string RGB_TVPW_2828BX = "RGB_TVPW_2828BX";
-
         internal const string RGB_RGBDSX_2828BX = "RGB_RGBDSX_2828BX";
         internal const string LCD_LED_POWER_SET = "LCD_LED_POWER_SET";
         internal const string DCM_EN_RST = "DCM_EN_RST";
         internal const string DCM_MULTIPLY = "DCM_MULTIPLY";
         internal const string DCM_DIVIDE = "DCM_DIVIDE";
-
         internal const string PLLEN_RST = "PLLEN_RST";
         internal const string GPIO_DIR = "GPIO_DIR";
         internal const string GPIOA_HB = "GPIOA_HB";
@@ -211,20 +203,21 @@ namespace SL_Tek_Studio_Pro
         {
             BdgeSel(false);
             if (Num < 1 || Num > 4) return Chip.ERROR_BUFLEN_ERR;
-            if (SL_Comm_Base.SPI_AddrWr(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
-            if (SL_Comm_Base.SPI_AddrWr(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
             if (!SL_AddrWrite(DATARDMODE_2828)) return Chip.ERROR_SPI_RD_FAIL;
             for (int i = 0; i < Num; i++)  xRegVal +=  (uint)SL_DataDummyRd() << (8*i);
             UnBgeSel();
             return Chip.ERROR_RESULT_OK;
         }
 
-        public static int SPI_ReadReg(byte xRegAddr, int Num, ref uint xRegVal )
+        public static int SPI_ReadReg(byte xRegAddr, int Num, ref uint xRegVal)
         {
+            xRegVal = 0;
             BdgeSel(false);
             if (Num < 1 || Num > 4) return Chip.ERROR_BUFLEN_ERR;
-            if (SL_Comm_Base.SPI_AddrWr(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
-            if (SL_Comm_Base.SPI_AddrWr(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
             if (!SL_AddrWrite(DATARDMODE_2828)) return Chip.ERROR_SPI_RD_FAIL;
             for (int i = 0; i < Num; i++) xRegVal += (uint)SL_DataDummyRd() << (8 * i);
             UnBgeSel();
@@ -232,10 +225,22 @@ namespace SL_Tek_Studio_Pro
         }
 
         public static int SPI_ReadRegNoCs(byte xRegAddr, ref uint xRegVal, int Num)
-        {     
+        {
+            xRegVal = 0;
             if (Num < 1 || Num > 4) return Chip.ERROR_BUFLEN_ERR;
-            if (SL_Comm_Base.SPI_AddrWr(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
-            if (SL_Comm_Base.SPI_AddrWr(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (!SL_AddrWrite(DATARDMODE_2828)) return Chip.ERROR_SPI_RD_FAIL;
+            for (int i = 0; i < Num; i++) xRegVal += (uint)SL_DataDummyRd() << (8 * i);
+            return Chip.ERROR_RESULT_OK;
+        }
+
+        public static int SPI_ReadRegNoCs(byte xRegAddr, int Num,ref uint xRegVal)
+        {
+            xRegVal = 0;
+            if (Num < 1 || Num > 4) return Chip.ERROR_BUFLEN_ERR;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(xRegAddr) != 0) return Chip.ERROR_SPI_RD_FAIL;
+            if (SL_Comm_Base.SPI_AddrWrNoCs(REG_2828_READMODE) != 0) return Chip.ERROR_SPI_RD_FAIL;
             if (!SL_AddrWrite(DATARDMODE_2828)) return Chip.ERROR_SPI_RD_FAIL;
             for (int i = 0; i < Num; i++) xRegVal += (uint)SL_DataDummyRd() << (8 * i);
             return Chip.ERROR_RESULT_OK;
@@ -286,6 +291,7 @@ namespace SL_Tek_Studio_Pro
 
         public static int SL_CommBase_ReadReg(byte xRegBuf, ref byte xRegVal)
         {
+            xRegVal = 0;
             bool ret = SL_AddrWrite(xRegBuf);
             if (!ret) return Chip.ERROR_READREG_FAIL;
             xRegVal = SL_DataRead();
@@ -296,6 +302,7 @@ namespace SL_Tek_Studio_Pro
 
         public static int SL_CommBase_ReadReg(byte xRegBuf, ref ushort xRegVal)
         {
+            xRegVal = 0;
             bool ret = SL_AddrWrite(xRegBuf);
             if (!ret) return Chip.ERROR_READREG_FAIL;
             xRegVal = SL_DataRead();
@@ -378,6 +385,7 @@ namespace SL_Tek_Studio_Pro
 
         public static int SL_CommBase_Read(uint wCmd, int wCmdLen, ref uint xferBuf, int xbufLen)
         {
+            xferBuf = 0;
             if (wCmdLen < 1 || wCmdLen > 4) return Chip.ERROR_BUFLEN_ERR;
             if (!SL_AddrWrite(ADDRWRMODE)) return Chip.ERROR_DISADDRWR;
             for (int i = wCmdLen; i > 0; i--)
@@ -473,7 +481,6 @@ namespace SL_Tek_Studio_Pro
         public static int SL_CommBase_WriteReg(string RegName, uint Val, int xbufLen)
         {
             uint RegVal = 0;
-   
             int errcode = 0;
             SL_Param_Util PramUtil = new SL_Param_Util();
             if (SL_Param_Util.ListRegInfo == null) return Chip.ERROR_LOOKUPREG_FAL;
@@ -551,8 +558,7 @@ namespace SL_Tek_Studio_Pro
             SL_DataWrite(data1);
             SL_DataWrite(data2);
             SL_DataWrite(data3);
-            return true;
- 
+            return true; 
         }
 
         public static byte ChipSel()
@@ -714,72 +720,4 @@ namespace SL_Tek_Studio_Pro
                                               , byte a6, byte d6, byte a7, byte d7, byte a8, byte d8, byte a9, byte d9, byte a10, byte d10);
     }
 
-
-
-
 }
-/* Testing Code
-unsafe
-{
-    byte *src = (byte *)ReadBackDatapPtr.ToPointer();
-    for (byte i = 0; i < xbufLen; i++) src[i] = i;
-}
-*/
-
-//public static int SC_CommBase_Read(ref byte[] xferBuf, int xbufLen)
-//{
-//    bool ret = Epp2USB.UsbReadScanner(ref xferBuf, (uint)xbufLen, EPPTransfer_16Bit);
-//    int xferRet = (ret == true) ? Chip.ERROR_RESULT_OK : Chip.ERROR_RESULT_FAIL;
-//    return xferRet;
-//}
-
-//public static int SC_CommBase_Write(ref byte[] xferBuf, int xbufLen)
-//{   
-//    bool ret = Epp2USB.UsbWriteScanner(ref xferBuf, (uint)xbufLen, EPPTransfer_16Bit);
-//    int xferRet = (ret == true) ? Chip.ERROR_RESULT_OK : Chip.ERROR_RESULT_FAIL;
-//    return Chip.ERROR_RESULT_OK;
-//}
-
-/*
-    public static int SC_CommBase_IO( byte WrReg, ref byte[] RxferBuf,  int RxferLen)
-    {
-        bool ret = SC_AddrWrite(WrReg);
-        if (!ret) return Chip.ERROR_WRITEREG_FAIL;
-        int xferRet = SC_CommBase_Read(ref RxferBuf, RxferLen);
-        return xferRet;
-    }
-
-    public static int SC_CommBase_IO(ref byte[] WrReg,  int WxferLen, ref byte[] RxferBuf,  int RxferLen)
-    {
-        bool ret = false;
-        if (RxferBuf.Length < RxferLen || WrReg.Length < WxferLen) return Chip.ERROR_BUFLEN_ERR;
-        if (WxferLen != 0)
-            for (int i = 0; i < WrReg.Length; i++)
-                ret = SC_AddrWrite(WrReg[i]);
-        if (!ret) return Chip.ERROR_WRITEREG_FAIL;
-        int xferRet = SC_CommBase_Read(ref RxferBuf, RxferLen);
-        return Chip.ERROR_RESULT_OK;
-    }
-
-      public static int SC_CommBase_DisWrite(ref byte[] xferBuf, int xbufLen)
-        {
-            if (xferBuf.Length < xbufLen) return Chip.ERROR_BUFLEN_ERR;
-            IntPtr WriteDataPtr = Marshal.AllocHGlobal(xbufLen);
-            Marshal.Copy(xferBuf, 0, WriteDataPtr, xbufLen); // xferBuf to WriteDataPtr
-            bool ret = Epp2USB.UsbWriteScanner(WriteDataPtr, (uint)xbufLen, EPPTransfer_8Bit);
-            Marshal.FreeHGlobal(WriteDataPtr);
-            int xferRet = (ret == true) ? Chip.ERROR_RESULT_OK : Chip.ERROR_RESULT_FAIL;
-            return xferRet;
-        }
-
-        public static int SC_CommBase_Read(ref byte[] xferBuf,  int xbufLen)
-        {
-            if (xferBuf.Length < xbufLen) return Chip.ERROR_BUFLEN_ERR;
-            IntPtr ReadBackDatapPtr = Marshal.AllocHGlobal(xbufLen);
-            bool ret = Epp2USB.UsbReadScanner(ReadBackDatapPtr, (uint)xbufLen, RWSCANNER_EPPCTL_8BIT);
-            Marshal.Copy(ReadBackDatapPtr, xferBuf, 0, xbufLen); //ReadBackDatapPtr to xferBuf
-            Marshal.FreeHGlobal(ReadBackDatapPtr);
-            int xferRet = (ret == true) ? Chip.ERROR_RESULT_OK : Chip.ERROR_RESULT_FAIL;
-            return xferRet;
-        }
-*/

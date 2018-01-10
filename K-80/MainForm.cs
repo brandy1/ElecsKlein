@@ -19,13 +19,13 @@ using System.Reflection;
 
 namespace K_80
 {
-    public partial class MainForm : Form
+    public partial class btn_send : Form
     {
         //↓↓↓↓↓↓↓↓↓↓全域變數區域↓↓↓↓↓↓↓↓↓↓
         private KClmtrWrap kClmtr;
-        private SL_ExcuteCmd Device = null;
+
         private string ELECSBOARD = "0x7422\r";
-        SL_Device_Util.ScDeviceInfo[] UsbDeviceInfo;
+        SL_Device_Util.SLDeviceInfo[] UsbDeviceInfo;
 
         private uint VCOM_Setting = 0;
 
@@ -72,8 +72,8 @@ namespace K_80
         public BrightnessTie_struct[] EstimateBrightnessTie_struct = new BrightnessTie_struct[29];
         public BrightnessTie_struct[] ActualBrightnessTie_struct = new BrightnessTie_struct[29];
 
-
-
+        private string ElecsFilePath = null;
+        private SL_ExcuteCmd RunSpt = new SL_ExcuteCmd();
         public class BrightnessTie_struct
         {
             public int Start_Tie_Index;
@@ -86,7 +86,7 @@ namespace K_80
         //↑↑↑↑↑↑↑↑↑↑全域變數區域↑↑↑↑↑↑↑↑↑↑
 
 
-        public MainForm()
+        public btn_send()
         {
             InitializeComponent();
             kClmtr = new KClmtrWrap();
@@ -263,185 +263,56 @@ namespace K_80
                 ComPortState_label.ForeColor = Color.Red;
                 ComPortCheck_Button.BackColor = Color.GreenYellow;
             }
-
-
-
         }
-
-
-
-
-
 
         private void btn_oepnelecs_Click(object sender, EventArgs e)
         {
-            Device = new SL_ExcuteCmd();
+        
             string RdStr = null;
             string SelStr = cbo_elecsport.SelectedItem.ToString();
             if (String.IsNullOrEmpty(SelStr) || SelStr.CompareTo("Null") == 0) { lbl_elecs_status.Text = "No Deviice"; return; }
-
-            if (Device.Open(SelStr))
+            if(RunSpt != null && RunSpt.Status())
             {
-                Device.WriteRead("id", ref RdStr);
-                if (RdStr.Trim().CompareTo(ELECSBOARD) == 0)
-                {
-                    lbl_elecs_status.Text = "E7422 Connect";
-                    btn_oepnelecs.BackColor = Color.GreenYellow;
-                }
+                btn_oepnelecs.Text = "Open";
+                lbl_elecs_status.Text = "E7422 Close Connection";
+                btn_oepnelecs.BackColor = SystemColors.Control;
+                RunSpt.Close();
+                RunSpt = null;
             }
             else
             {
-                lbl_elecs_status.Text = "E7422 Not Connect";
-                btn_oepnelecs.BackColor = SystemColors.Control;
-                Device.Close();
-                Device = null;
+                RunSpt = new SL_ExcuteCmd();
+                if (RunSpt.Open(SelStr))
+                {
+                    RunSpt.WriteRead("id", ref RdStr);
+                    if (RdStr.CompareTo(ELECSBOARD) == 0)
+                    {
+                        lbl_elecs_status.Text = "E7422 Connect";
+                        btn_oepnelecs.BackColor = Color.GreenYellow;
+                        btn_oepnelecs.Text = "Close";
+                    }
+                }
             }
         }
 
         private void btn_write_Click(object sender, EventArgs e)
         {
-
-
-
-
-            if (Device != null || !Device.Status())
+            if (RunSpt != null || !RunSpt.Status())
             {
-                Device.Write("mipi.write 0x05 0x28");
-                Device.Write("mipi.write 0x05 0x10");
+                RunSpt.Write("mipi.write 0x05 0x28");
+                RunSpt.Write("mipi.write 0x05 0x10");
                 Thread.Sleep(500);
-                Device.Write("mipi.video.disable");
-                Device.Write("mipi.clock.disable");
-                Device.Write("gpio.write 0x0F");
+                RunSpt.Write("mipi.video.disable");
+                RunSpt.Write("mipi.clock.disable");
+                RunSpt.Write("gpio.write 0x0F");
                 Thread.Sleep(100);
-                Device.Write("gpio.write 0x07");
+                RunSpt.Write("gpio.write 0x07");
                 Thread.Sleep(100);
-                Device.Write("gpio.write 0x00 ");
+                RunSpt.Write("gpio.write 0x00 ");
                 Thread.Sleep(100);
-                Device.Write("power.off all");
+                RunSpt.Write("power.off all");
             }
         }
-
-
-        //private void GetEstimateBrightness_button_Click(object sender, EventArgs e)
-        //{
-        //    string textdata = null;
-
-
-        //    this.GetEstimateBrightness_button.ForeColor = Color.Green;
-        //    Application.DoEvents();
-        //    int dive = comboBox1.SelectedIndex + 1;
-        //    SL_WhiskyComm_Util WhiskeyUtil = new SL_WhiskyComm_Util();
-
-        //    Info_textBox.Text = "";
-
-        //    /*推算標準Gamma亮度前 先用K80量測面板表現最暗與最亮灰階的亮度值*/
-
-        //    EstimateBrightness_Min = Actual_Brightness[0];// 最暗
-        //    EstimateBrightness_Max = Actual_Brightness[255];// 最亮
-
-        //    YMax_label.Text = "YMin=" + Convert.ToString(EstimateBrightness_Min);
-        //    YMin_label.Text = "YMax=" + Convert.ToString(EstimateBrightness_Max);
-
-
-        //    /*套用設定的Gamma值 推算出符合標準Gamma曲線答案的亮度表現*/
-
-        //    double Gamma_set;
-        //    double Gamma_set_tolerance;
-        //    double temp;
-
-        //    double.TryParse(GammaSet_textBox.Text, out Gamma_set);
-
-        //    //EstimateBrightness_Max = 50;
-        //    //EstimateBrightness_Min = 0.5;
-
-        //    chart1.Series[0].Points.Clear();
-        //    chart1.Series[1].Points.Clear();
-        //    chart1.Series[2].Points.Clear();
-        //    uint tie = 0;
-
-        //    for (int Brightness = 0; Brightness < 256; Brightness++)
-        //    {
-        //        temp = (double)(Brightness) / 256;
-
-        //        EstimateBrightness[Brightness] = Math.Round(EstimateBrightness_Max * (float)Math.Pow(temp, Gamma_set), 4) + EstimateBrightness_Min;
-
-        //        chart1.Series[0].Points.AddXY(Brightness, EstimateBrightness[Brightness]);
-
-        //        if (VP_index[tie] == Brightness)
-        //        {
-        //            textdata = "VP" + Convert.ToString(VP_index[tie]) + " Brightness=" + Convert.ToString(EstimateBrightness[Brightness]) + "\r\n";
-        //            Info_textBox.AppendText(textdata);
-        //            tie++;
-        //        }
-
-        //    }
-
-
-        //    //計算誤差上界 並繪出圖
-        //    double.TryParse(Gamma_set_tolerance_textBox.Text, out Gamma_set_tolerance);
-        //    Gamma_set_tolerance = Gamma_set + Gamma_set_tolerance;
-        //    //Gamma_set_tolerance = Gamma_set + Convert.ToDouble(Gamma_set_tolerance_textBox.Text);
-        //    for (int Brightness = 0; Brightness < 256; Brightness++)
-        //    {
-        //        temp = (double)(Brightness) / 256;
-
-        //        EstimateBrightness_toleranceP[Brightness] = Math.Round(EstimateBrightness_Max * (float)Math.Pow(temp, Gamma_set_tolerance), 4) + EstimateBrightness_Min;
-
-        //        chart1.Series[1].Points.AddXY(Brightness, EstimateBrightness_toleranceP[Brightness]);
-        //    }
-
-        //    //計算誤差下界 並繪出圖
-        //    double.TryParse(Gamma_set_tolerance_textBox.Text, out Gamma_set_tolerance);
-        //    Gamma_set_tolerance = Gamma_set - Gamma_set_tolerance;
-        //    for (int Brightness = 0; Brightness < 256; Brightness++)
-        //    {
-        //        temp = (double)(Brightness) / 256;
-
-        //        EstimateBrightness_toleranceN[Brightness] = Math.Round(EstimateBrightness_Max * (float)Math.Pow(temp, Gamma_set_tolerance), 4) + EstimateBrightness_Min;
-
-        //        chart1.Series[2].Points.AddXY(Brightness, EstimateBrightness_toleranceN[Brightness]);
-        //    }
-
-
-        //    //透過上面的步驟可以計算出 符合Gamma曲線的亮度表現 
-        //    //因為我們都是用亮度去做計算與評估 因此要把1024階電阻分壓選擇 
-        //    //轉換成 這些分壓可以轉變成1024階亮度表現
-        //    //因此 下面運算 取最大亮度與最小亮度表現
-        //    //套入分壓階層 模擬出1024個Source電壓階層能產生出的相對應1024階亮度表現
-        //    for (int num = 0; num < 1024; num++)
-        //    {
-        //        VRA_mapping_Brightness[num] = Math.Round(EstimateBrightness_Max * ((double)(1024 - num) / 1024), 5) + EstimateBrightness_Min;//取到小數點第5位
-        //    }
-
-        //    textdata = "Brigheness Toleranc Analyse" + "\r\n";
-        //    Info_textBox.AppendText(textdata);
-        //    for (int Brightness = 0; Brightness < 256; Brightness++)
-        //    {
-        //        textdata = "Gary=" + Convert.ToString(Brightness) + " Brightness:" + Convert.ToString(Actual_Brightness[Brightness]) + ":" + Convert.ToString(EstimateBrightness_toleranceP[Brightness]) + ":" + Convert.ToString(EstimateBrightness_toleranceN[Brightness]) + "\r\n";
-        //        Info_textBox.AppendText(textdata);
-
-        //        //if(Actual_Brightness[Brightness] > EstimateBrightness_toleranceP[Brightness])
-        //        //{
-        //        //    textdata = "Gary=" + Convert.ToString(Brightness) + " Brightness:" + Convert.ToString(Actual_Brightness[Brightness]) + " > tolance Spec:" + Convert.ToString(EstimateBrightness_toleranceP[Brightness])+"\r\n";
-        //        //    Info_textBox.AppendText(textdata);
-        //        //}
-        //        //else if(Actual_Brightness[Brightness] < EstimateBrightness_toleranceN[Brightness])
-        //        //{
-        //        //    textdata = "Gary=" + Convert.ToString(Brightness) + " Brightness:" + Convert.ToString(Actual_Brightness[Brightness]) + " < tolance Spec:" + Convert.ToString(EstimateBrightness_toleranceN[Brightness]) + "\r\n";
-        //        //    Info_textBox.AppendText(textdata);
-
-        //        //}
-        //        //else
-        //        //{
-        //        //    textdata = "Gary=" + Convert.ToString(Brightness) + " Brightness:" + Convert.ToString(Actual_Brightness[Brightness]) + " < Qualified Spec!! \r\n";
-        //        //    Info_textBox.AppendText(textdata);
-        //        //}
-        //    }
-
-        //    button13.Enabled = true;
-        //    this.GetEstimateBrightness_button.ForeColor = Color.Black;
-        //}
-
 
         private double K80_Trigger_Measurement(int testcount)
         {
@@ -734,7 +605,7 @@ namespace K_80
 
             //切換SSD2130 PassWord & page
             //Page31 R+   Page32 R-   Page33 G+   Page34 G-   Page35 B+   Page36 B-
-            if(true)
+            if (true)
             {
                 WhiskeyUtil.MipiWrite(0x29, 0xFF, 0x21, 0x30, Page);
 
@@ -900,7 +771,7 @@ namespace K_80
                 track_flag[0] = 0x00;//本次測試的Flag狀態 清除
                 track_flag[1] = 0x00;//上次測試的Flag狀態 清除
 
-                RETRY:
+            RETRY:
 
                 //面板點目前要測試亮度的灰階
                 tie_gray = Convert.ToByte(255 - VP_index[tie]);
@@ -988,7 +859,7 @@ namespace K_80
                     track_flag[0] = 0x00;
                     track_flag[1] = 0x00;
                 }
-                TieTestDone:
+            TieTestDone:
                 track_flag[0] = 0x00;//本次測試的Flag狀態 清除
                 track_flag[1] = 0x00;//上次測試的Flag狀態 清除
             }
@@ -1118,7 +989,7 @@ namespace K_80
             SL_Device_Util deviceUtil = new SL_Device_Util();
             if (deviceUtil.GetUSBDevices() > 0)
             {
-                List<SL_Device_Util.ScDeviceInfo> UsbDevice = deviceUtil.FindScDevice();
+                List<SL_Device_Util.SLDeviceInfo> UsbDevice = deviceUtil.FindScDevice();
                 UsbDeviceInfo = UsbDevice.ToArray();
                 if (UsbDeviceInfo.Length > 1)
                     txtbox_info.Text = "Much Device,First Connected";
@@ -1142,7 +1013,7 @@ namespace K_80
             SL_Device_Util deviceUtil = new SL_Device_Util();
             if (deviceUtil.GetUSBDevices() > 0)
             {
-                List<SL_Device_Util.ScDeviceInfo> UsbDevice = deviceUtil.FindScDevice();
+                List<SL_Device_Util.SLDeviceInfo> UsbDevice = deviceUtil.FindScDevice();
                 this.UsbDeviceInfo = UsbDevice.ToArray();
 
                 if (UsbDeviceInfo.Length > 1)
@@ -1186,7 +1057,7 @@ namespace K_80
             //WhiskeyUtil.i2cWrite(0x22, 0x02, 0x50);
             //WhiskeyUtil.i2cWrite(0x22, 0x0A, 0x11);
 
-            
+
             WhiskeyUtil.i2cWrite(0x22, 0x0c, 0x48);
             WhiskeyUtil.i2cWrite(0x22, 0x09, 0x0a);
             WhiskeyUtil.i2cWrite(0x22, 0x0d, 0x67);
@@ -1304,7 +1175,7 @@ namespace K_80
 
 
 
-        private void LoadInitialCode ()
+        private void LoadInitialCode()
         {
 
             this.button3.ForeColor = Color.Green;
@@ -3057,7 +2928,7 @@ namespace K_80
 
             Application.DoEvents();
 
-            for (uint scal = 0; scal < 1024; scal = scal+2)
+            for (uint scal = 0; scal < 1024; scal = scal + 2)
             {
                 for (uint i = 0; i < 29; i++)
                 {
@@ -3067,7 +2938,7 @@ namespace K_80
                 WriteGammaSettingAlltheSame_to_SSD2130(gammasetting);
                 WriteGammaSettingAlltheSame_to_SSD2130_SetPage(gammasetting, 0x31);
                 WriteGammaSettingAlltheSame_to_SSD2130_SetPage(gammasetting, 0x32);
-                    //Page31 R+   Page32 R-   Page33 G+   Page34 G-   Page35 B+   Page36 B-
+                //Page31 R+   Page32 R-   Page33 G+   Page34 G-   Page35 B+   Page36 B-
 
 
                 WhiskeyUtil.ImageFill(127, 0, 0);
@@ -3311,7 +3182,7 @@ namespace K_80
             WhiskeyUtil.MipiBridgeSelect(0x10); //Select 2828 Bank
             //WhiskeyUtil.ImageShow("VG.bmp");
             WhiskeyUtil.ImageShow("VG.bmp");
-            
+
             this.button4.ForeColor = Color.Black;
         }
 
@@ -3483,7 +3354,7 @@ namespace K_80
 
             textdata = "R \r\n";
             Info_textBox.AppendText(textdata);
-            
+
             for (uint tie = 0; tie < 29; tie++) //tir=0 時亮度最亮
             {
 
@@ -3818,7 +3689,7 @@ namespace K_80
 
 
 
-            for (tie_gamma_setting = 800; tie_gamma_setting < 1024; tie_gamma_setting= tie_gamma_setting+1)
+            for (tie_gamma_setting = 800; tie_gamma_setting < 1024; tie_gamma_setting = tie_gamma_setting + 1)
             {
                 WhiskeyUtil.MipiWrite(0x29, 0xFF, 0x21, 0x30, 0x28);
                 WhiskeyUtil.MipiWrite(0x23, 0x00, 0x01);
@@ -3899,7 +3770,7 @@ namespace K_80
                 WhiskeyUtil.MipiWrite(0x23, 0x34, Reg_setting[1]);
                 WhiskeyUtil.MipiWrite(0x23, 0x35, Reg_setting[4]);
             }
-            else if(color == "G")
+            else if (color == "G")
             {
                 for (byte addr = 0x40; addr <= 0x62; addr++)
                 {
@@ -3918,7 +3789,7 @@ namespace K_80
                 WhiskeyUtil.MipiWrite(0x23, 0x64, Reg_setting[1]);
                 WhiskeyUtil.MipiWrite(0x23, 0x65, Reg_setting[4]);
             }
-            else if(color == "B")
+            else if (color == "B")
             {
                 for (byte addr = 0x70; addr <= 0x92; addr++)
                 {
@@ -4530,7 +4401,7 @@ namespace K_80
             for (byte TieCnt = 0; TieCnt < 29; TieCnt++)
             {
                 WhiskeyUtil.MipiRead(TieCnt, 1, ref RdVal);
-                textdata = "Addr="+ Convert.ToString(TieCnt, 16) +"; Cmd=" + Convert.ToString(RdVal[0], 16) + "\r\n";
+                textdata = "Addr=" + Convert.ToString(TieCnt, 16) + "; Cmd=" + Convert.ToString(RdVal[0], 16) + "\r\n";
                 Info_textBox.AppendText(textdata);
             }
 
@@ -4566,7 +4437,7 @@ namespace K_80
             TieRegisterSetting[27] = 1003;
             TieRegisterSetting[28] = 1023;
             WriteGammaSettingAlltheSame_to_SSD2130_SetPage(TieRegisterSetting, 0x32);
-            textdata = "\r\n"+ "Read Page 0x32" + "\r\n";
+            textdata = "\r\n" + "Read Page 0x32" + "\r\n";
             Info_textBox.AppendText(textdata);
             WhiskeyUtil.MipiWrite(0x29, 0xFF, 0x21, 0x30, 0x32);
             for (byte TieCnt = 0; TieCnt < 29; TieCnt++)
@@ -4798,7 +4669,7 @@ namespace K_80
             WhiskeyUtil.MipiWrite(0x23, 0x05, 0x40);
             WhiskeyUtil.MipiRead(0x05, 1, ref RdVal);
 
-            textdata = "(After)Read Setting Addr 0x05=" + Convert.ToString(RdVal[0],16) + "\r\n";
+            textdata = "(After)Read Setting Addr 0x05=" + Convert.ToString(RdVal[0], 16) + "\r\n";
             Info_textBox.AppendText(textdata);
 
             WhiskeyUtil.MipiWrite(0x29, 0xFF, 0x21, 0x30, 0x00);
@@ -4817,7 +4688,7 @@ namespace K_80
             WhiskeyUtil.MipiWrite(0x23, 0x05, 0xc0);
             WhiskeyUtil.MipiRead(0x05, 1, ref RdVal);
 
-            textdata = "(After)Read Setting Addr 0x05=" + Convert.ToString(RdVal[0],16) + "\r\n";
+            textdata = "(After)Read Setting Addr 0x05=" + Convert.ToString(RdVal[0], 16) + "\r\n";
             Info_textBox.AppendText(textdata);
 
             WhiskeyUtil.MipiWrite(0x29, 0xFF, 0x21, 0x30, 0x00);
@@ -4875,7 +4746,7 @@ namespace K_80
             byte[] RdVal = new byte[1];
 
             SL_WhiskyComm_Util WhiskeyUtil = new SL_WhiskyComm_Util();
-            
+
             //VCom 調整時 設定暫存器Page為0xA0
             WhiskeyUtil.MipiWrite(0x29, 0xff, 0x21, 0x30, 0xA0);
 
@@ -4910,10 +4781,10 @@ namespace K_80
             //VCOM_Setting
 
 
-            VCom_Setting_Value = Convert.ToUInt16(VCom_Setting_String,16);
-            if(VCom_Setting_Value <= 0)
+            VCom_Setting_Value = Convert.ToUInt16(VCom_Setting_String, 16);
+            if (VCom_Setting_Value <= 0)
             { VCom_Setting_Value = 0; }
-            else if(VCom_Setting_Value >= 455)
+            else if (VCom_Setting_Value >= 455)
             { VCom_Setting_Value = 455; }
 
 
@@ -4990,7 +4861,7 @@ namespace K_80
             //被要求測試R Gamma(R套用同樣的值測)
             if (R_CKBox.Checked == true)
             {
-                
+
                 textdata = "實測R Gamma亮度表現\r\n";
                 Info_textBox.AppendText(textdata);
 
@@ -5183,7 +5054,7 @@ namespace K_80
                             Index_RGB_Tie_Projection[tienum] = scal;
                         }
                     }
-                    textdata = textdata + "Index_RGB_Tie["+ Convert.ToString(tienum) + "]=" + Convert.ToString(Index_RGB_Tie_Projection[tienum]) + Environment.NewLine;
+                    textdata = textdata + "Index_RGB_Tie[" + Convert.ToString(tienum) + "]=" + Convert.ToString(Index_RGB_Tie_Projection[tienum]) + Environment.NewLine;
                 }
                 Info_textBox.AppendText(textdata);
             }
@@ -5221,10 +5092,10 @@ namespace K_80
                     min_diff = 1000;
                     for (scal = 0; scal < 1024; scal++)
                     {
-                            if(scal == 623)
-                            {
-                                uint i = 0;
-                            }
+                        if (scal == 623)
+                        {
+                            uint i = 0;
+                        }
                         if (Math.Abs(R_Brightness_save[scal] - R_Tie_Projection[tienum]) <= min_diff)
                         {
                             min_diff = Math.Abs(R_Brightness_save[scal] - R_Tie_Projection[tienum]);
@@ -5258,7 +5129,7 @@ namespace K_80
                     temp2 = (float)Math.Pow(temp, GammaSet);
 
                     G_Tie_Projection[tienum] = Math.Round(maxmin_diffbrightness * (float)Math.Pow(temp, GammaSet), 4) + min_brightness;
-                }                                           
+                }
 
 
                 //根據推算的標準亮度值 去找尋實測的亮度資料中 媒合綁點設定值         
@@ -5301,7 +5172,7 @@ namespace K_80
                     temp2 = (float)Math.Pow(temp, GammaSet);
 
                     B_Tie_Projection[tienum] = Math.Round(maxmin_diffbrightness * (float)Math.Pow(temp, GammaSet), 4) + min_brightness;
-                }                                           
+                }
 
 
                 //根據推算的標準亮度值 去找尋實測的亮度資料中 媒合綁點設定值                                                           
@@ -5352,7 +5223,7 @@ namespace K_80
             if (Gary_CKBox.Checked == true)
             {
                 Info_textBox.Text = "";//清空Info_textBox 內容
-                for (uint i=0; i<29; i++)
+                for (uint i = 0; i < 29; i++)
                 {
                     textdata = textdata + "Index_RGB_Tie[" + Convert.ToString(i) + "]=" + Convert.ToString(Index_RGB_Tie_Projection[i]) + Environment.NewLine;
                 }
@@ -5490,9 +5361,9 @@ namespace K_80
                 Max_Brightness = 0;
                 Min_Brightness = 1000;
                 byte color_GrayScale = 0;
-                for (uint GrayScale=0; GrayScale<256; GrayScale++)
+                for (uint GrayScale = 0; GrayScale < 256; GrayScale++)
                 {
-                    
+
                     Application.DoEvents();
                     WhiskeyUtil.ImageFill(color_GrayScale, color_GrayScale, color_GrayScale);
                     Thread.Sleep(300);
@@ -5500,37 +5371,37 @@ namespace K_80
                     RGB_Brightness_temp[GrayScale] = Math.Round(K80_Trigger_Measurement(1), 4);//K-80取得亮度表現值
                     textdata = "RGB_Brightness[Gary=" + Convert.ToString(GrayScale) + "]=" + Convert.ToString(RGB_Brightness_temp[GrayScale]) + Environment.NewLine;
 
-                    
+
 
                     if (RGB_Brightness_temp[GrayScale] > Max_Brightness)
-                    { Max_Brightness = RGB_Brightness_temp[GrayScale];      }
-                    if(Min_Brightness > RGB_Brightness_temp[GrayScale])
-                    { Min_Brightness = RGB_Brightness_temp[GrayScale];      }
+                    { Max_Brightness = RGB_Brightness_temp[GrayScale]; }
+                    if (Min_Brightness > RGB_Brightness_temp[GrayScale])
+                    { Min_Brightness = RGB_Brightness_temp[GrayScale]; }
                     Info_textBox.AppendText(textdata);
 
                     color_GrayScale++;
                     chart1.Series[0].Points.AddXY(GrayScale, RGB_Brightness_temp[GrayScale]);//Chart1繪圖RGB_Gma_Curve
                 }
-                
+
                 maxSubmin = Max_Brightness - Min_Brightness;
 
                 GMA_Set_comboBox.SelectedIndex = 0;
 
                 for (uint GrayScale = 0; GrayScale < 256; GrayScale++)
                 {
-                    RGB_Brightness_STDAns_Pos[GrayScale] = Math.Round(maxSubmin * ((float)Math.Pow(((double)GrayScale / 255), (GammaValue + AGma_tolence))),4)+ Min_Brightness;
-                    RGB_Brightness_STDAns_Nag[GrayScale] = Math.Round(maxSubmin * ((float)Math.Pow(((double)GrayScale / 255), (GammaValue - AGma_tolence))),4) + Min_Brightness;
+                    RGB_Brightness_STDAns_Pos[GrayScale] = Math.Round(maxSubmin * ((float)Math.Pow(((double)GrayScale / 255), (GammaValue + AGma_tolence))), 4) + Min_Brightness;
+                    RGB_Brightness_STDAns_Nag[GrayScale] = Math.Round(maxSubmin * ((float)Math.Pow(((double)GrayScale / 255), (GammaValue - AGma_tolence))), 4) + Min_Brightness;
 
                     chart1.Series[1].Points.AddXY(GrayScale, RGB_Brightness_STDAns_Pos[GrayScale]);//Chart1繪圖RGB_Gma_Upbound
                     chart1.Series[2].Points.AddXY(GrayScale, RGB_Brightness_STDAns_Nag[GrayScale]);//Chart1繪圖RGB_Gma_Lowbound
-                    
+
                     //實測亮度 比Gamma預期值誤差量 還要亮 超過Tolerance Spec.
                     if (RGB_Brightness_temp[GrayScale] > RGB_Brightness_STDAns_Pos[GrayScale])
                     {
-                        if(Error_Flag_RGB == false)
-                        {   Error_Flag_RGB = true; }
+                        if (Error_Flag_RGB == false)
+                        { Error_Flag_RGB = true; }
 
-                        textdata = "Fail 大於 Tolerance Sprc. @ GaryScal=" + Convert.ToString(GrayScale) + "  Spec:" + Convert.ToString(RGB_Brightness_STDAns_Pos[GrayScale]) + "  實測:"+ RGB_Brightness_temp[GrayScale] + Environment.NewLine;
+                        textdata = "Fail 大於 Tolerance Sprc. @ GaryScal=" + Convert.ToString(GrayScale) + "  Spec:" + Convert.ToString(RGB_Brightness_STDAns_Pos[GrayScale]) + "  實測:" + RGB_Brightness_temp[GrayScale] + Environment.NewLine;
                     }
                     //實測亮度 比Gamma預期值誤差量 還要暗 低於過Tolerance Spec.
                     else if (RGB_Brightness_temp[GrayScale] < RGB_Brightness_STDAns_Nag[GrayScale])
@@ -5548,7 +5419,7 @@ namespace K_80
                     Info_textBox.AppendText(textdata);
                 }
 
-                if(Error_Flag_RGB == false)
+                if (Error_Flag_RGB == false)
                 {
                     AGma_RGBJudge_Label.ForeColor = Color.Green;
                     AGma_RGBJudge_Label.Text = "灰階Gma:Pass";
@@ -5821,7 +5692,7 @@ namespace K_80
             string textdata = null;
             double max_brightness = 0;
             double min_brightness = 0;
-            uint pass_buffer =0;
+            uint pass_buffer = 0;
 
 
             //步驟1 先找尋最大亮度與最暗亮度 
@@ -5932,15 +5803,15 @@ namespace K_80
                 std_tie_brightness[28] = min_brightness;
                 for (uint i = 1; i <= 27; i++)
                 {
-                    std_tie_brightness[i] = Math.Round(maxSubmin * ((float)Math.Pow(((double)(255-VP_index[i]) / 255), 2.2)),4)+ min_brightness;
+                    std_tie_brightness[i] = Math.Round(maxSubmin * ((float)Math.Pow(((double)(255 - VP_index[i]) / 255), 2.2)), 4) + min_brightness;
                 }
 
 
                 //開始針對每個綁點的標準答案亮度 去找最接近的綁點設定值
-                uint Last_time_Index = max_bright_index+1;
+                uint Last_time_Index = max_bright_index + 1;
                 byte Gray_scale = 0;
 
-                
+
 
 
                 for (uint j = 1; j <= 27; j++)
@@ -5951,7 +5822,7 @@ namespace K_80
                     double min = 10000;
                     uint index = Last_time_Index + 1;
 
-                    for (uint i = Last_time_Index+1; i < min_bright_index; i++)
+                    for (uint i = Last_time_Index + 1; i < min_bright_index; i++)
                     {
                         gammasetting[j] = i;
                         //WriteGammaSettingAlltheSame_to_SSD2130(gammasetting);
@@ -5978,7 +5849,7 @@ namespace K_80
                             pass_buffer++;
                         }
 
-                        if(pass_buffer >= 10)//表示連續10個都呈現沒有最靠近標準答案值的狀況發生 表示偏離趨勢 可以跳出迴圈了
+                        if (pass_buffer >= 10)//表示連續10個都呈現沒有最靠近標準答案值的狀況發生 表示偏離趨勢 可以跳出迴圈了
                         {
                             break;
                         }
@@ -6000,7 +5871,7 @@ namespace K_80
                 //Info_textBox.Text = "";
                 for (uint j = 0; j <= 28; j++)
                 {
-                    textdata = "R綁點"+ Convert.ToString(VP_index[j])+"的設定值="+Convert.ToString(gammasetting[j]) + "\r\n";
+                    textdata = "R綁點" + Convert.ToString(VP_index[j]) + "的設定值=" + Convert.ToString(gammasetting[j]) + "\r\n";
                     Info_textBox.AppendText(textdata);
                 }
                 pass_buffer = 0;
@@ -6365,6 +6236,72 @@ namespace K_80
                 }
                 pass_buffer = 0;
             }
+        }
+
+        private void btn_loadfile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ScreenSpt = new OpenFileDialog();
+            ElecsFilePath = null;
+            ScreenSpt.FileName = "AutoScript.txt";
+            ScreenSpt.Filter = "Text File | *.txt";
+            ScreenSpt.DefaultExt = "*.txt";
+            ScreenSpt.Filter = "Script Files|*.txt|*.text|*.spt";
+
+            if (ScreenSpt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                txtbox_fileapth.Text = Path.GetFileName(ScreenSpt.FileName);
+                ElecsFilePath = ScreenSpt.FileName;
+                Info_textBox.Text = "Load File successfully";
+            }
+            else
+                Info_textBox.Text = "Load File Fail";
+        }
+
+        private void button10_Click_1(object sender, EventArgs e)
+        {
+            string Innertxt =null;
+            string[] CmdLines = null;
+            bool ret = true;
+            string rdStr = null, ErrInfo = null;
+            List<ScriptInfo> lScriptInfo = new List<ScriptInfo>();
+
+            if (String.IsNullOrEmpty(txtbox_fileapth.Text) && String.IsNullOrEmpty(txtbox_cmd.Text))
+                lbl_elecs_status.Text = "No Command to Execute!";
+
+            if (!String.IsNullOrEmpty(txtbox_cmd.Text)) Innertxt = txtbox_cmd.Text;
+            if (!String.IsNullOrEmpty(txtbox_fileapth.Text)) Innertxt = System.IO.File.ReadAllText(ElecsFilePath);
+
+
+            /*Selection or All*/
+            CmdLines = Innertxt.Split('\n');
+            /*Verify and Exam Command*/
+            ErrInfo = RunSpt.ExamScript(CmdLines, ref lScriptInfo);
+
+            progressBar1.Maximum = CmdLines.Length;
+
+            for (int i = 0; i < lScriptInfo.Count; i++)
+            {
+                if (RunSpt.ExamCmd(lScriptInfo[i]))
+                {
+                    ret = RunSpt.ProcessCmd(RunSpt.getElecsCmd(), RunSpt.getElecsClass(), ref rdStr);
+                    progressBar1.Value = i;
+                    Info_textBox.Text += rdStr + "\r\n";
+                    Application.DoEvents();
+                }
+            }
+
+            Info_textBox.Text = "Finished";
+        }
+
+        private void button9_Click_1(object sender, EventArgs e)
+        {
+            string Msg = null;
+
+            RunSpt.RunSingleCmd("image.fill 128 0 128", ref Msg);
+            RunSpt.RunSingleCmd("mipi.write 0x37 0x02", ref Msg);      
+            RunSpt.RunSingleCmd("mipi.write 0x14 0x0A", ref Msg);
+            RunSpt.RunSingleCmd("mipi.read", ref Msg);
+            Info_textBox.Text = Msg;
         }
     }
 }

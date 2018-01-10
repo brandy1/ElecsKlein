@@ -1,10 +1,8 @@
-﻿#if (INSTRUSUPPORT)
+﻿#if (VISASUPPORT)
 using Ivi.Visa.Interop;
 #endif
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+
 
 namespace SL_Tek_Studio_Pro
 {
@@ -21,15 +19,15 @@ namespace SL_Tek_Studio_Pro
 
     public class SL_Equip_Util
     {
-#if (INSTRUSUPPORT)
+#if (VISASUPPORT)
         ResourceManagerClass Rm = new ResourceManagerClass();
         FormattedIO488Class IO_Obj = new FormattedIO488Class();
-#endif 
+#endif
         private string InstruAddr = null;
         private string InstruName = null;
         private string InstruNickName = null;
         private bool bOpen = false;
-#if (INSTRUSUPPORT)
+#if (VISASUPPORT)
         public bool Open(string Addr)
         {
             Rm = new ResourceManagerClass();
@@ -68,8 +66,8 @@ namespace SL_Tek_Studio_Pro
                 Rm = null;
                 IO_Obj = null;
                 bOpen = ret = false;
+                Log.f(this.GetType().FullName, "Open() :" + e.Message);
             }
-
             return ret;
         }
 
@@ -88,6 +86,7 @@ namespace SL_Tek_Studio_Pro
             }
             catch (Exception e)
             {
+               
                 try
                 {
                     IO_Obj.IO.Close();
@@ -109,6 +108,7 @@ namespace SL_Tek_Studio_Pro
                 Rm = null;
                 IO_Obj = null;
                 bOpen =  ret = false;
+                Log.f(this.GetType().FullName, "Open() :" + e.Message);
             }
             return ret;
         }
@@ -218,29 +218,9 @@ namespace SL_Tek_Studio_Pro
             return ret;
         }
     
-        public string[] SearchAllEquip()
-        {
-            ResourceManager Rm = new ResourceManager();
-            ResourceManagerClass Rmc = new ResourceManagerClass();         
-            return Rm.FindRsrc("?*INSTR");
-        }
-
-        public string[] SearchEquipWithComm()
-        {
-            ResourceManager Rm = new ResourceManager();
-            ResourceManagerClass Rmc = new ResourceManagerClass();
-            return Rm.FindRsrc("ASRL?*INSTR{VI_ATTR_ASRL_BAUD == 9600}");
-        }
-
-        public void  SetInstruName(string InstruName, string NickName)
-        {
-            this.InstruName = InstruName;
-            this.InstruNickName = NickName;
-        }
 
         public bool Close()
         {
-
             try
             {
                 IO_Obj.IO.Close();
@@ -262,8 +242,39 @@ namespace SL_Tek_Studio_Pro
             Rm = null;
             IO_Obj = null;
             bOpen = false;
-
             return true;
+        }
+
+
+
+        public string[] SearchAllEquip()
+        {
+            ResourceManager Rm = new ResourceManager();
+            ResourceManagerClass Rmc = new ResourceManagerClass();
+            string[] devices = null;
+            try
+            {
+                devices = Rm.FindRsrc("?*INSTR");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("{0} Exception caught.", e);
+            }
+
+            return devices;
+        }
+
+        public string[] SearchEquipWithComm()
+        {
+            ResourceManager Rm = new ResourceManager();
+            ResourceManagerClass Rmc = new ResourceManagerClass();
+            return Rm.FindRsrc("ASRL?*INSTR{VI_ATTR_ASRL_BAUD == 9600}");
+        }
+
+        public void  SetInstruName(string InstruName, string NickName)
+        {
+            this.InstruName = InstruName;
+            this.InstruNickName = NickName;
         }
 #endif
         public bool isOpen(){return (bOpen == true) ? true : false;   }

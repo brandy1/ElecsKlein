@@ -16,7 +16,7 @@ namespace K_80
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new btn_send());
         }
     }
 }

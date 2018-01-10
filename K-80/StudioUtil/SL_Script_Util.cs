@@ -187,7 +187,7 @@ namespace SL_Tek_Studio_Pro
         {
             string line;
             uint value = 0;
-            SL_IO_Util strUtil = new SL_IO_Util();
+            SL_Digital_Util strUtil = new SL_Digital_Util();
             StreamReader sr = new StreamReader(FilePath, System.Text.Encoding.Default);
             while ((line = sr.ReadLine()) != null)
             {
@@ -205,7 +205,7 @@ namespace SL_Tek_Studio_Pro
             string line;
             bool isRight = true;
             uint value = 0;
-            SL_IO_Util Util = new SL_IO_Util();
+            SL_Digital_Util Util = new SL_Digital_Util();
             List<byte> lXferData = new List<byte>();
             StreamReader sr = new StreamReader(FilePath, System.Text.Encoding.Default);
             while ((line = sr.ReadLine()) != null)

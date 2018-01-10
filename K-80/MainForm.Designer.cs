@@ -1,6 +1,6 @@
 ﻿namespace K_80
 {
-    partial class MainForm
+    partial class btn_send
     {
         /// <summary>
         /// 設計工具所需的變數。
@@ -43,12 +43,20 @@
             System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series11 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(btn_send));
             this.ComPortState_label = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.ComPortSel_comboBox = new System.Windows.Forms.ComboBox();
             this.ComPortCheck_Button = new System.Windows.Forms.Button();
             this.gbx_openelecs = new System.Windows.Forms.GroupBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.label6 = new System.Windows.Forms.Label();
+            this.txtbox_cmd = new System.Windows.Forms.TextBox();
+            this.button10 = new System.Windows.Forms.Button();
+            this.btn_loadfile = new System.Windows.Forms.Button();
+            this.txtbox_fileapth = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.lbl_elecs_status = new System.Windows.Forms.Label();
             this.btn_oepnelecs = new System.Windows.Forms.Button();
             this.cbo_elecsport = new System.Windows.Forms.ComboBox();
@@ -146,6 +154,7 @@
             this.checkBox3 = new System.Windows.Forms.CheckBox();
             this.groupBox11 = new System.Windows.Forms.GroupBox();
             this.button5 = new System.Windows.Forms.Button();
+            this.button9 = new System.Windows.Forms.Button();
             this.gbx_openelecs.SuspendLayout();
             this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
@@ -209,26 +218,103 @@
             // 
             // gbx_openelecs
             // 
+            this.gbx_openelecs.Controls.Add(this.label8);
+            this.gbx_openelecs.Controls.Add(this.progressBar1);
+            this.gbx_openelecs.Controls.Add(this.label6);
+            this.gbx_openelecs.Controls.Add(this.txtbox_cmd);
+            this.gbx_openelecs.Controls.Add(this.button10);
+            this.gbx_openelecs.Controls.Add(this.btn_loadfile);
+            this.gbx_openelecs.Controls.Add(this.txtbox_fileapth);
+            this.gbx_openelecs.Controls.Add(this.label4);
             this.gbx_openelecs.Controls.Add(this.lbl_elecs_status);
             this.gbx_openelecs.Controls.Add(this.btn_oepnelecs);
             this.gbx_openelecs.Controls.Add(this.cbo_elecsport);
             this.gbx_openelecs.Controls.Add(this.lbl_elecs);
             this.gbx_openelecs.Font = new System.Drawing.Font("微軟正黑體", 9F, System.Drawing.FontStyle.Bold);
-            this.gbx_openelecs.Location = new System.Drawing.Point(8, 900);
+            this.gbx_openelecs.Location = new System.Drawing.Point(1204, 713);
             this.gbx_openelecs.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
             this.gbx_openelecs.Name = "gbx_openelecs";
             this.gbx_openelecs.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
-            this.gbx_openelecs.Size = new System.Drawing.Size(155, 113);
+            this.gbx_openelecs.Size = new System.Drawing.Size(267, 191);
             this.gbx_openelecs.TabIndex = 2;
             this.gbx_openelecs.TabStop = false;
             this.gbx_openelecs.Text = "非必要使用(E7422)";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(16, 157);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(31, 16);
+            this.label8.TabIndex = 12;
+            this.label8.Text = "Bar:";
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(61, 160);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(194, 23);
+            this.progressBar1.TabIndex = 11;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(16, 130);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(38, 16);
+            this.label6.TabIndex = 10;
+            this.label6.Text = "Cmd:";
+            // 
+            // txtbox_cmd
+            // 
+            this.txtbox_cmd.Location = new System.Drawing.Point(61, 131);
+            this.txtbox_cmd.Multiline = true;
+            this.txtbox_cmd.Name = "txtbox_cmd";
+            this.txtbox_cmd.Size = new System.Drawing.Size(119, 23);
+            this.txtbox_cmd.TabIndex = 9;
+            // 
+            // button10
+            // 
+            this.button10.Location = new System.Drawing.Point(187, 131);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(68, 23);
+            this.button10.TabIndex = 8;
+            this.button10.Text = "Send";
+            this.button10.UseVisualStyleBackColor = true;
+            this.button10.Click += new System.EventHandler(this.button10_Click_1);
+            // 
+            // btn_loadfile
+            // 
+            this.btn_loadfile.Location = new System.Drawing.Point(187, 96);
+            this.btn_loadfile.Name = "btn_loadfile";
+            this.btn_loadfile.Size = new System.Drawing.Size(68, 23);
+            this.btn_loadfile.TabIndex = 7;
+            this.btn_loadfile.Text = "Load";
+            this.btn_loadfile.UseVisualStyleBackColor = true;
+            this.btn_loadfile.Click += new System.EventHandler(this.btn_loadfile_Click);
+            // 
+            // txtbox_fileapth
+            // 
+            this.txtbox_fileapth.Location = new System.Drawing.Point(61, 96);
+            this.txtbox_fileapth.Name = "txtbox_fileapth";
+            this.txtbox_fileapth.Size = new System.Drawing.Size(119, 23);
+            this.txtbox_fileapth.TabIndex = 6;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(16, 99);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(39, 16);
+            this.label4.TabIndex = 5;
+            this.label4.Text = "Path:";
             // 
             // lbl_elecs_status
             // 
             this.lbl_elecs_status.AutoSize = true;
             this.lbl_elecs_status.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.lbl_elecs_status.ForeColor = System.Drawing.Color.Red;
-            this.lbl_elecs_status.Location = new System.Drawing.Point(273, 41);
+            this.lbl_elecs_status.Location = new System.Drawing.Point(12, 72);
             this.lbl_elecs_status.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lbl_elecs_status.Name = "lbl_elecs_status";
             this.lbl_elecs_status.Size = new System.Drawing.Size(160, 21);
@@ -238,19 +324,19 @@
             // btn_oepnelecs
             // 
             this.btn_oepnelecs.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_oepnelecs.Location = new System.Drawing.Point(151, 22);
+            this.btn_oepnelecs.Location = new System.Drawing.Point(137, 16);
             this.btn_oepnelecs.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
             this.btn_oepnelecs.Name = "btn_oepnelecs";
-            this.btn_oepnelecs.Size = new System.Drawing.Size(100, 64);
+            this.btn_oepnelecs.Size = new System.Drawing.Size(118, 49);
             this.btn_oepnelecs.TabIndex = 4;
-            this.btn_oepnelecs.Text = "SET OK";
+            this.btn_oepnelecs.Text = "Open";
             this.btn_oepnelecs.UseVisualStyleBackColor = true;
             this.btn_oepnelecs.Click += new System.EventHandler(this.btn_oepnelecs_Click);
             // 
             // cbo_elecsport
             // 
             this.cbo_elecsport.FormattingEnabled = true;
-            this.cbo_elecsport.Location = new System.Drawing.Point(17, 59);
+            this.cbo_elecsport.Location = new System.Drawing.Point(12, 40);
             this.cbo_elecsport.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
             this.cbo_elecsport.Name = "cbo_elecsport";
             this.cbo_elecsport.Size = new System.Drawing.Size(113, 24);
@@ -260,7 +346,7 @@
             // 
             this.lbl_elecs.AutoSize = true;
             this.lbl_elecs.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbl_elecs.Location = new System.Drawing.Point(12, 27);
+            this.lbl_elecs.Location = new System.Drawing.Point(12, 19);
             this.lbl_elecs.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lbl_elecs.Name = "lbl_elecs";
             this.lbl_elecs.Size = new System.Drawing.Size(94, 21);
@@ -1033,7 +1119,7 @@
             // 
             // Get_AGma_ReadBrightness_BUT
             // 
-            this.Get_AGma_ReadBrightness_BUT.Location = new System.Drawing.Point(1269, 579);
+            this.Get_AGma_ReadBrightness_BUT.Location = new System.Drawing.Point(1053, 537);
             this.Get_AGma_ReadBrightness_BUT.Name = "Get_AGma_ReadBrightness_BUT";
             this.Get_AGma_ReadBrightness_BUT.Size = new System.Drawing.Size(133, 46);
             this.Get_AGma_ReadBrightness_BUT.TabIndex = 141;
@@ -1116,7 +1202,7 @@
             // 
             this.AGma_BJudge_Label.AutoSize = true;
             this.AGma_BJudge_Label.Font = new System.Drawing.Font("微軟正黑體", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.AGma_BJudge_Label.Location = new System.Drawing.Point(13, 212);
+            this.AGma_BJudge_Label.Location = new System.Drawing.Point(14, 195);
             this.AGma_BJudge_Label.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.AGma_BJudge_Label.Name = "AGma_BJudge_Label";
             this.AGma_BJudge_Label.Size = new System.Drawing.Size(49, 16);
@@ -1127,7 +1213,7 @@
             // 
             this.AGma_GJudge_Label.AutoSize = true;
             this.AGma_GJudge_Label.Font = new System.Drawing.Font("微軟正黑體", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.AGma_GJudge_Label.Location = new System.Drawing.Point(12, 193);
+            this.AGma_GJudge_Label.Location = new System.Drawing.Point(13, 176);
             this.AGma_GJudge_Label.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.AGma_GJudge_Label.Name = "AGma_GJudge_Label";
             this.AGma_GJudge_Label.Size = new System.Drawing.Size(50, 16);
@@ -1149,7 +1235,7 @@
             // 
             this.AGma_RGBJudge_Label.AutoSize = true;
             this.AGma_RGBJudge_Label.Font = new System.Drawing.Font("微軟正黑體", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.AGma_RGBJudge_Label.Location = new System.Drawing.Point(12, 157);
+            this.AGma_RGBJudge_Label.Location = new System.Drawing.Point(13, 140);
             this.AGma_RGBJudge_Label.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.AGma_RGBJudge_Label.Name = "AGma_RGBJudge_Label";
             this.AGma_RGBJudge_Label.Size = new System.Drawing.Size(62, 16);
@@ -1214,7 +1300,7 @@
             this.groupBox10.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.groupBox10.Location = new System.Drawing.Point(519, 696);
             this.groupBox10.Name = "groupBox10";
-            this.groupBox10.Size = new System.Drawing.Size(731, 194);
+            this.groupBox10.Size = new System.Drawing.Size(664, 194);
             this.groupBox10.TabIndex = 141;
             this.groupBox10.TabStop = false;
             this.groupBox10.Text = "7~DigitalGamma";
@@ -1439,12 +1525,23 @@
             this.button5.Text = "button5";
             this.button5.UseVisualStyleBackColor = true;
             // 
-            // MainForm
+            // button9
+            // 
+            this.button9.Location = new System.Drawing.Point(1301, 646);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(75, 23);
+            this.button9.TabIndex = 144;
+            this.button9.Text = "button9";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click_1);
+            // 
+            // btn_send
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1480, 920);
+            this.Controls.Add(this.button9);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.Get_AGma_ReadBrightness_BUT);
             this.Controls.Add(this.groupBox11);
@@ -1468,7 +1565,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
             this.MaximizeBox = false;
-            this.Name = "MainForm";
+            this.Name = "btn_send";
             this.Text = "Flicker & Gamma Tuning Tool";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.gbx_openelecs.ResumeLayout(false);
@@ -1507,7 +1604,6 @@
         private System.Windows.Forms.Button btn_oepnelecs;
         private System.Windows.Forms.ComboBox cbo_elecsport;
         private System.Windows.Forms.Label lbl_elecs;
-        private System.Windows.Forms.Label lbl_elecs_status;
         private System.Windows.Forms.Button RdRegisteer2Text_but;
         private System.Windows.Forms.Button WrText2GammaRegister_but;
         private System.Windows.Forms.TextBox Info_textBox;
@@ -1601,6 +1697,16 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button GammaTest1;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Label lbl_elecs_status;
+        private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button btn_loadfile;
+        private System.Windows.Forms.TextBox txtbox_fileapth;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox txtbox_cmd;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Button button9;
     }
 }
 

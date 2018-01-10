@@ -66,142 +66,10 @@ namespace SL_Tek_Studio_Pro
             return Mipi.MipiWrite(Mipidata);
         }
 
-        public bool MipiHSWrite(byte type, byte data)
-        {
-            byte[] MipiData = new byte[2];
-            MipiData[0] = type;
-            MipiData[1] = data;
-            return Mipi.MipiHSWrite(MipiData);
-        }
-
-        public bool MipiHSWrite(byte type, byte data, byte data1)
-        {
-            byte[] MipiData = new byte[3];
-            MipiData[0] = type;
-            MipiData[1] = data;
-            MipiData[2] = data1;
-            return Mipi.MipiHSWrite(MipiData);
-        }
-
-        public bool MipiHSWrite(byte type, byte data, byte data1, byte data2)
-        {
-            byte[] MipiData = new byte[4];
-            MipiData[0] = type;
-            MipiData[1] = data;
-            MipiData[2] = data1;
-            MipiData[3] = data2;
-            return Mipi.MipiHSWrite(MipiData);
-        }
-
-        public bool MipiHSWrite(byte type, byte data, byte data1, byte data2, byte data3)
-        {
-            byte[] MipiData = new byte[5];
-            MipiData[0] = type;
-            MipiData[1] = data;
-            MipiData[2] = data1;
-            MipiData[3] = data2;
-            MipiData[4] = data3;
-            return Mipi.MipiHSWrite(MipiData);
-        }
-
+      
         public bool MipiHSWrite(byte[] Mipidata)
         {
             return Mipi.MipiHSWrite(Mipidata);
-        }
-
-        public bool MipiRead(byte Addr, byte RdNum, ref string RdStr)
-        {
-            byte RdNumH = 0, RdNumeL = 0, C2_1 = 0, C2_2 = 0, C6_1 = 0, C6_2 = 0, Ready = 0, BTAR = 0, LPTO = 0, DST = 0, CST = 0;
-            int i = 0, k = 0, l = 0, j = 2;
-            uint Value = 0;
-            bool ret = true;
-            RdStr = null;
-
-            SL_Comm_Base.SPI_WriteReg(0xb8, 0x00, 0x00);
-            SL_Comm_Base.SPI_WriteReg(0xb7, 0x02, 0x80);
-            SL_Comm_Base.SPI_WriteReg(0xbd, 0x00, 0x00);
-            SL_Comm_Base.SPI_WriteReg(0xbc, 0x00, 0x01);
-
-            RdNumH = (byte)(RdNum >> 8);
-            RdNumeL = (byte)(RdNum & 0xff);
-
-
-            SL_Comm_Base.SPI_WriteReg(0xc1, RdNumH, RdNumeL);
-
-            SL_Comm_Base.SPI_AddrWr(0xbf);
-            SL_Comm_Base.SPI_DataWr(Addr);
-            Thread.Sleep(20);
-
-            SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
-            SL_Comm_Base.SPI_AddrWrNoCs(0xc2);
-            Thread.Sleep(1);
-            SL_Comm_Base.SPI_AddrWrNoCs(0xfa);
-            SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
-            C2_1 = SL_Comm_Base.SL_DataDummyRd();
-            C2_2 = SL_Comm_Base.SL_DataDummyRd();
-            SL_Comm_Base.UnBgeSel();
-
-            Thread.Sleep(20);
-
-            SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
-            SL_Comm_Base.SPI_AddrWrNoCs(0xc6);
-            Thread.Sleep(1);
-            SL_Comm_Base.SPI_AddrWrNoCs(0xfa);
-            SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
-            C6_1 = SL_Comm_Base.SL_DataDummyRd();
-            C6_2 = SL_Comm_Base.SL_DataDummyRd();
-            SL_Comm_Base.UnBgeSel();
-
-            Thread.Sleep(10);
-
-
-            CST = (byte)((C6_2 & 0x8) >> 3);
-            DST = (byte)((C6_2 & 0x4) >> 2);
-            LPTO = (byte)((C6_1 & 0x40) >> 6);
-            BTAR = (byte)((C6_1 & 0x04) >> 2);
-            Ready = (byte)(C6_1 & 0x01);
-
-            if (LPTO == 1) { SL_Comm_Base.SPI_WriteReg(0xc0, 0x00, 0x01); Thread.Sleep(50); }
-
-
-
-            if (Ready == 1)
-            {
-                SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
-
-                i = ((C2_2 * 256) + C2_1);
-
-                SL_Comm_Base.SPI_AddrWrNoCs(0xff);
-
-                l = 16 * (1 + i / 16);
-
-                for (k = 0; k < l; k++)
-                {
-                    if (j == 2)
-                    {
-                        SL_Comm_Base.SPI_AddrWrNoCs(0xFA);
-                        SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
-                        j = 0;
-                    }
-
-                    Value = SL_Comm_Base.SL_DataDummyRd();
-
-                    if (k < i)
-                    {
-                        RdStr += "Rd[" + k + "]= 0x" + Convert.ToString(Value, 16) + " ";
-                    }
-                    j++;
-                }
-
-                SL_Comm_Base.UnBgeSel();
-                ret = true;
-            }
-            else
-            {
-                ret = false;
-                RdStr = "Mipi Read Not Ready";
-            }
-            return ret;
         }
 
         public bool MipiRead(byte Addr, byte RdNum, ref byte[] RdVal)
@@ -294,32 +162,32 @@ namespace SL_Tek_Studio_Pro
             return ret;
         }
 
-
-
-
-        public bool MipiHSRead(byte Addr, byte RdNum, ref string RdStr)
+        public bool MipiRead(byte Addr, byte RdNum, ref string RdStr)
         {
-            byte RdNumH = 0, RdNumeL = 0, C2_1 = 0, C2_2 = 0, C6_1 = 0, C6_2 = 0, Ready = 0;
-            int i = 0, k = 0, l = 0;
+            byte RdNumH = 0, RdNumeL = 0, C2_1 = 0, C2_2 = 0, C6_1 = 0, C6_2 = 0, Ready = 0,BTAR =0,LPTO =0,DST=0,CST =0;
+            int i = 0, k = 0, l = 0, j=2;
             uint Value = 0;
-
+            bool ret = true;
+            RdStr = null;
+            
             SL_Comm_Base.SPI_WriteReg(0xb8, 0x00, 0x00);
-            SL_Comm_Base.SPI_WriteReg(0xb7, 0x02, 0x89);
+            SL_Comm_Base.SPI_WriteReg(0xb7, 0x02, 0x80);
             SL_Comm_Base.SPI_WriteReg(0xbd, 0x00, 0x00);
             SL_Comm_Base.SPI_WriteReg(0xbc, 0x00, 0x01);
 
             RdNumH = (byte)(RdNum >> 8);
             RdNumeL = (byte)(RdNum & 0xff);
 
+
             SL_Comm_Base.SPI_WriteReg(0xc1, RdNumH, RdNumeL);
 
             SL_Comm_Base.SPI_AddrWr(0xbf);
             SL_Comm_Base.SPI_DataWr(Addr);
-
             Thread.Sleep(20);
 
             SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
             SL_Comm_Base.SPI_AddrWrNoCs(0xc2);
+            Thread.Sleep(1);
             SL_Comm_Base.SPI_AddrWrNoCs(0xfa);
             SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
             C2_1 = SL_Comm_Base.SL_DataDummyRd();
@@ -330,15 +198,26 @@ namespace SL_Tek_Studio_Pro
 
             SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
             SL_Comm_Base.SPI_AddrWrNoCs(0xc6);
+            Thread.Sleep(1);
             SL_Comm_Base.SPI_AddrWrNoCs(0xfa);
             SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
             C6_1 = SL_Comm_Base.SL_DataDummyRd();
             C6_2 = SL_Comm_Base.SL_DataDummyRd();
             SL_Comm_Base.UnBgeSel();
 
-            Thread.Sleep(20);
+            Thread.Sleep(10);
 
+   
+            CST = (byte)((C6_2 & 0x8) >> 3);
+            DST = (byte)((C6_2 & 0x4) >> 2);
+            LPTO = (byte)((C6_1 & 0x40) >> 6);
+            BTAR = (byte)((C6_1 & 0x04) >> 2);
             Ready = (byte)(C6_1 & 0x01);
+
+            if (LPTO == 1) { SL_Comm_Base.SPI_WriteReg(0xc0, 0x00, 0x01); Thread.Sleep(50); }
+
+
+
             if (Ready == 1)
             {
                 SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
@@ -351,30 +230,147 @@ namespace SL_Tek_Studio_Pro
 
                 for (k = 0; k < l; k++)
                 {
-                    if (k == 0)
+                    if (j == 2)
                     {
                         SL_Comm_Base.SPI_AddrWrNoCs(0xFA);
                         SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
+                        j = 0;
                     }
+
                     Value = SL_Comm_Base.SL_DataDummyRd();
+
                     if (k < i)
                     {
                         RdStr += "Rd[" + k + "]= 0x" + Convert.ToString(Value, 16) + " ";
                     }
+                    j++;
                 }
 
                 SL_Comm_Base.UnBgeSel();
+                ret = true;
             }
-            return true;
+            else
+            {
+                ret = false;
+                RdStr = "Mipi Read Not Ready";
+            }
+            return ret;
+        }
+
+        
+
+        public bool MipiHSRead(byte Addr, byte RdNum, ref string RdStr)
+        {
+            byte RdNumH = 0, RdNumeL = 0, C2_1 = 0, C2_2 = 0, C6_1 = 0, C6_2 = 0, Ready = 0, BTAR = 0, LPTO = 0, DST = 0, CST = 0;
+            int i = 0, k = 0, l = 0, j = 2;
+            uint Value = 0;
+            bool ret = true;
+            RdStr = null;
+
+            SL_Comm_Base.SPI_WriteReg(0xb8, 0x00, 0x00);
+            SL_Comm_Base.SPI_WriteReg(0xb7, 0x02, 0x89);
+            SL_Comm_Base.SPI_WriteReg(0xbd, 0x00, 0x00);
+            SL_Comm_Base.SPI_WriteReg(0xbc, 0x00, 0x01);
+
+            RdNumH = (byte)(RdNum >> 8);
+            RdNumeL = (byte)(RdNum & 0xff);
+
+
+            SL_Comm_Base.SPI_WriteReg(0xc1, RdNumH, RdNumeL);
+
+            SL_Comm_Base.SPI_AddrWr(0xbf);
+            SL_Comm_Base.SPI_DataWr(Addr);
+            Thread.Sleep(20);
+
+            SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
+            SL_Comm_Base.SPI_AddrWrNoCs(0xc2);
+            Thread.Sleep(1);
+            SL_Comm_Base.SPI_AddrWrNoCs(0xfa);
+            SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
+            C2_1 = SL_Comm_Base.SL_DataDummyRd();
+            C2_2 = SL_Comm_Base.SL_DataDummyRd();
+            SL_Comm_Base.UnBgeSel();
+
+            Thread.Sleep(20);
+
+            SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
+            SL_Comm_Base.SPI_AddrWrNoCs(0xc6);
+            Thread.Sleep(1);
+            SL_Comm_Base.SPI_AddrWrNoCs(0xfa);
+            SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
+            C6_1 = SL_Comm_Base.SL_DataDummyRd();
+            C6_2 = SL_Comm_Base.SL_DataDummyRd();
+            SL_Comm_Base.UnBgeSel();
+
+            Thread.Sleep(20);
+
+
+            CST = (byte)((C6_2 & 0x8) >> 3);
+            DST = (byte)((C6_2 & 0x4) >> 2);
+            LPTO = (byte)((C6_1 & 0x40) >> 6);
+            BTAR = (byte)((C6_1 & 0x04) >> 2);
+            Ready = (byte)(C6_1 & 0x01);
+
+            if (LPTO == 1) { SL_Comm_Base.SPI_WriteReg(0xc0, 0x00, 0x01); Thread.Sleep(50); }
+
+            Thread.Sleep(10);
+
+            if (Ready == 1)
+            {
+                SL_Comm_Base.SL_CommBase_WriteReg(0xb3, SL_Comm_Base.ChipSel());
+
+                i = ((C2_2 * 256) + C2_1);
+
+                SL_Comm_Base.SPI_AddrWrNoCs(0xff);
+
+                l = 16 * (1 + i / 16);
+
+                for (k = 0; k < l; k++)
+                {
+                    if (j == 2)
+                    {
+                        SL_Comm_Base.SPI_AddrWrNoCs(0xFA);
+                        SL_Comm_Base.SL_AddrWrite(SL_Comm_Base.DATARDMODE_2828);
+                        j = 0;
+                    }
+
+                    Value = SL_Comm_Base.SL_DataDummyRd();
+
+                    if (k < i)
+                    {
+                        RdStr += "Rd[" + k + "]= 0x" + Convert.ToString(Value, 16) + " ";
+                    }
+                    j++;
+                }
+
+                SL_Comm_Base.UnBgeSel();
+                ret = true;
+            }
+            else
+            {
+                ret = false;
+                RdStr = "Mipi Read Not Ready";
+            }
+            return ret;
         }
 
         public bool ImageFill(byte R,byte G, byte B)
         {
-            SL_Comm_Base.SPI_WriteReg(0xb7, 0x02, 0x59);
             SL_Comm_Base.SL_CommBase_WriteReg(0x92, 0x20);
             SL_Comm_Base.SL_CommBase_WriteReg(0xad, R, G, B);
             SL_Comm_Base.SL_CommBase_WriteReg(0xbc, 0x00);
+            SL_Comm_Base.SPI_WriteReg(0xb7, 0x02, 0x59);
             return true;
+        }
+
+        public bool MipiUlp()
+        {
+            return BridgeWrite(0xb7, 0x03, 0x04); 
+        }
+
+        public bool MipiBta()
+        {
+            return BridgeWrite(0xc4, 0x00, 0x08); ;
         }
 
         public bool SetFpgaTiming(byte BankEn, byte BankWrRd, byte Interface, byte RgbMode, byte DcmMul, byte DcmDiv)
@@ -651,7 +647,13 @@ namespace SL_Tek_Studio_Pro
             return (ret == 0) ? true : false;
         }
 
-        public bool BridgeWrite(byte Addr ,byte Data)
+        public bool BridgeWrite(byte Addr ,byte Data, byte Data1)
+        {
+            int ret = SL_Comm_Base.SPI_WriteReg(Addr, Data, Data1);
+            return (ret == 0) ? true : false;
+        }
+
+        public bool BridgeWrite(byte Addr, byte Data)
         {
             int ret = SL_Comm_Base.SPI_WriteReg(Addr, Data);
             return (ret == 0) ? true : false;
@@ -723,6 +725,7 @@ namespace SL_Tek_Studio_Pro
             SL_Comm_Base.SPI_WriteReg(0xb7, 0x06, 0x59);
             SL_Comm_Base.SL_CommBase_WriteReg(0xbc, 0x11);
             Thread.Sleep(2);
+            lXferData.Clear();
             return true;
         }
 

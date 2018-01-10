@@ -71,6 +71,8 @@
     <Compile Include="Comm\SL_Cpu.cs" />
     <Compile Include="Comm\SL_Rgb.cs" />
     <Compile Include="Comm\SL_Series_Util.cs" />
+    <Compile Include="Comm\SL_Visa.cs" />
+    <Compile Include="Comm\SL_Visa32.cs" />
     <Compile Include="ICType\SL_Color_SLL2x25.cs" />
     <Compile Include="ICType\SL_Color_SLL2x30.cs" />
     <Compile Include="ICType\SL_Color_Base.cs" />
@@ -82,20 +84,23 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolomonComm\SL_ElecsSpt_Util.cs" />
     <Compile Include="SolomonComm\SL_Equip_Util.cs" />
     <Compile Include="SolomonComm\SL_ExcuteCmd.cs" />
+    <Compile Include="SolomonComm\SL_Visa_Util.cs" />
     <Compile Include="SolomonComm\SL_WhiskySpt_Util.cs" />
     <Compile Include="SolomonComm\SL_Whisky_Utill.cs" />
-    <Compile Include="StudioUtil\SL_Color_Util.cs" />
-    <Compile Include="SolomonComm\SL_ElecsSpt_Util.cs" />
     <Compile Include="StudioUtil\SL_Bridge_Flash.cs" />
-    <Compile Include="StudioUtil\SL_Device_Util.cs" />
+    <Compile Include="StudioUtil\SL_Bridge_Util.cs" />
+    <Compile Include="StudioUtil\SL_Digital_Util.cs" />
     <Compile Include="StudioUtil\SL_HidUtil.cs" />
     <Compile Include="StudioUtil\SL_Img_Lib.cs" />
     <Compile Include="StudioUtil\SL_Ini_Util.cs" />
     <Compile Include="StudioUtil\SL_IO_Util.cs" />
+    <Compile Include="StudioUtil\SL_Log_Util.cs" />
     <Compile Include="StudioUtil\SL_Param_Util.cs" />
     <Compile Include="StudioUtil\SL_Script_Util.cs" />
+    <Compile Include="StudioUtil\SL_Sytem_API.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

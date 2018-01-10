@@ -55,7 +55,7 @@ namespace SL_Tek_Studio_Pro
         public bool  isFileExist(string ImagePath)
         {
             SL_IO_Util imgUtil = new SL_IO_Util();
-            string fullPath = System.IO.Directory.GetCurrentDirectory() + "\\" +ImagePath;
+            string fullPath = Setting.ExeImgDirPath + "\\" +ImagePath;
             if (imgUtil.isFileExist(ImagePath)) { this.ImgPath = ImagePath; return true; }
             if (imgUtil.isFileExist(fullPath)) { this.ImgPath = fullPath; return true; }        
             return false;
@@ -310,7 +310,7 @@ namespace SL_Tek_Studio_Pro
 
         public bool WriteImgToTxt(string FilePath, byte[] Pixel)
         {
-            SL_IO_Util imgUtil = new SL_IO_Util();
+            SL_Digital_Util imgUtil = new SL_Digital_Util();
             string TxtPath = Path.ChangeExtension(FilePath, "txt");
             imgUtil.WriteByteToTxt(TxtPath, Pixel, true);
             return true;

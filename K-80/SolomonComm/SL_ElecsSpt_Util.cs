@@ -9,7 +9,7 @@ namespace SL_Tek_Studio_Pro
              string Cmd : 
                 ELSCS E7422 Command
              byte Type :  
-                R/W/WR/Other: 0/1/2/3
+                R/W/WR/Found/Save: 0/1/2/3/4
              byte Category :
                 0:  No Parameter
                 1:  Examine Parameter as String
@@ -18,6 +18,7 @@ namespace SL_Tek_Studio_Pro
                 4:  Examine the last One Item (String)
                 5:  Examine Parameter as Float
                 6.  Examine Parameter as String and Parameter Num Equal
+                7.	Examine Parameter as string and Paramenter is more than 1 and less than max
                 Appendix: Parameters are bigger then zero (all of above)
              int  MaxParm : 
                 R/W Paramenter Number  Range: 0~65535
@@ -28,21 +29,35 @@ namespace SL_Tek_Studio_Pro
 				1:  System Command
                 2:  Instrument Command
                 3.  Solomon Command
+                4.  ESPEC SU241 Command
             byte Reg:
                 Register Address
              ArrayList Item :
                 Special Compare Item
         }
-     */
+    
+        public class ScriptInfo
+        {
+            public string Command { get; set; } 
+                Original Command
+            public byte Result { get; set; }
+                0: No Error
+                1: Warning
+                2: Comment
+                3: Command Error
+				4: Parameter Error
+            public string Message { get; set; }
+                Errro Report
+        }
 
+     */
     public class ScriptInfo
     {
         public string Command { get; set; }
-        public bool Result { get; set; }
+        public int Index { get; set; }
+        public byte Result { get; set; }
         public string Message { get; set; }
-
     }
-
     public class ElecsCmd
     {
         public string Cmd { get; set; }
@@ -52,6 +67,7 @@ namespace SL_Tek_Studio_Pro
         public byte Category { get; set; }
         public byte Class { get; set; }
         public byte Reg { get; set; }
+        public int Delay { get; set; }
         public ArrayList Item { get; set; }
     }
 
@@ -69,23 +85,27 @@ namespace SL_Tek_Studio_Pro
         }
     }
 
+    //SendCommmand : Deal With SendCommand
     class SL_ElecsSpt_Util
     {
         private string SplitLine = "\r\n", SendCommand = null;
         private char[] DelimiterChars = { ' ', ',', '\t' };
         private string Comment = "#";
-        private string CommentSlash = "//";
-        private const int MAXCMDS = 130;
+        private const int MAXCMDS = 150;
         public ElecsCmd[] E7422Cmds = new ElecsCmd[MAXCMDS];
         private int Count = 0;
         private int ElecsOpt = -1;
         private const string READMSG = "READ";
         private const string ERRMSG = "ERROR";
-        private const int ERRELECSCMD = 1;
-        private const int ERRELECSPARM = 2;
+        private const string WARNMSG = "WARNING";
+        private const string PASSMSG = "PASS";
+        private const string COMMENTMSG = "COMMENT";
+        private const int ERRCMD = 3;
+        private const int ERRPARM =4;
+        private const int WARNTOKEN = 1;
+        private const int COMMENT = 2;
         public SL_ElecsSpt_Util()
         {
-
             for (int i = 0; i < MAXCMDS; i++)
             {
                 E7422Cmds[i] = new ElecsCmd();
@@ -99,6 +119,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //version
@@ -108,6 +129,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Delay
@@ -117,6 +139,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 10000;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //bridge.reset
@@ -126,6 +149,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 1000;
             Count = Count + 1;
 
             //mipi.host.reset
@@ -135,6 +159,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 1000;
             Count = Count + 1;
 
             //SPI Write
@@ -144,6 +169,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI1 Write
@@ -153,6 +179,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI2 Write
@@ -162,6 +189,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge Write
@@ -171,6 +199,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI Read
@@ -180,6 +209,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI1 Read
@@ -189,6 +219,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI2 Read
@@ -198,6 +229,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge Read
@@ -207,6 +239,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI Write Set
@@ -216,6 +249,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge Write Set
@@ -225,6 +259,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI1 Write Set
@@ -234,6 +269,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge1 Write Set
@@ -243,6 +279,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI2 Write Set
@@ -252,6 +289,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge2 Write Set
@@ -261,6 +299,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI Write Clear
@@ -270,6 +309,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge Write Set
@@ -279,6 +319,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI1 Write Clear
@@ -288,6 +329,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge1 Write Set
@@ -297,6 +339,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //SPI2 Write Clear
@@ -306,6 +349,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Bridge2 Write Set
@@ -315,6 +359,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi Write
@@ -324,6 +369,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65536;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1 Write
@@ -333,6 +379,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65536;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2 Write
@@ -342,6 +389,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65536;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi Write Hs
@@ -351,6 +399,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65536;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1 Write Hs
@@ -360,6 +409,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65536;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2 Write Hs
@@ -369,6 +419,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65535;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi Read
@@ -378,6 +429,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1 Read
@@ -387,6 +439,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2 Read
@@ -396,6 +449,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi.dsi
@@ -408,6 +462,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].Item.Add("command");
             E7422Cmds[Count].Item.Add("burst");
             E7422Cmds[Count].Item.Add("nonburst");
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi.mode
@@ -419,6 +474,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].Class = 0;
             E7422Cmds[Count].Item.Add("single");
             E7422Cmds[Count].Item.Add("twin");
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //mipi.video
@@ -428,6 +484,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 10;
             E7422Cmds[Count].MaxValue = 4096;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //mipi.clock.enable
@@ -437,6 +494,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //mipi1.clock.enable
@@ -464,6 +522,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //mipi1.clock.disable
@@ -473,6 +532,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //mipi2.clock.disable
@@ -482,6 +542,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi.lane.enable
@@ -491,6 +552,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1.lane.enable
@@ -500,6 +562,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2.lane.enable
@@ -509,6 +572,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi.lane.disable
@@ -518,6 +582,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1.lane.disable
@@ -527,6 +592,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2.lane.disable
@@ -536,6 +602,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi.video.enable
@@ -545,6 +612,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1.video.enable
@@ -554,6 +622,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2.video.enable
@@ -563,6 +632,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi.video.disable
@@ -572,6 +642,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi1.video.disable
@@ -581,6 +652,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi2.video.disable
@@ -590,6 +662,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi Timing LP
@@ -599,6 +672,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 5;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi Timing Data
@@ -608,6 +682,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 5;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Mipi Timing Clk
@@ -617,6 +692,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 5;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power.on
@@ -626,6 +702,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 50;
             Count = Count + 1;
 
             //Power1 on
@@ -635,6 +712,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 50;
             Count = Count + 1;
 
             //Power2 on
@@ -644,6 +722,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 50;
             Count = Count + 1;
 
             //Power.off
@@ -653,6 +732,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 256;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power1.off
@@ -662,6 +742,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 256;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power2.off
@@ -671,15 +752,17 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 256;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power LED
             E7422Cmds[Count].Cmd = "power.led";
             E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 3;
+            E7422Cmds[Count].Category = 5;
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power1 LED
@@ -689,6 +772,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power2 LED
@@ -698,6 +782,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power Current
@@ -707,6 +792,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power1 Current
@@ -716,6 +802,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power2 Current
@@ -725,15 +812,17 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power Voltage
             E7422Cmds[Count].Cmd = "power.voltage";
             E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].Category = 5;
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power Level
@@ -743,6 +832,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power1 Voltage
@@ -752,6 +842,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power1 Level
@@ -761,6 +852,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power2 Voltage
@@ -770,6 +862,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Power2 Level
@@ -779,6 +872,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 10;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio Set
@@ -788,6 +882,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio1 Set
@@ -797,6 +892,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio2 Set
@@ -806,6 +902,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio Clr
@@ -815,6 +912,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio1 Clr
@@ -824,6 +922,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio2 Clr
@@ -842,6 +941,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio1 Write
@@ -851,6 +951,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio2 Write
@@ -860,6 +961,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 5;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio.dir
@@ -869,6 +971,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio.Level
@@ -878,6 +981,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio.i2c.set
@@ -887,6 +991,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio.i2c.write
@@ -896,6 +1001,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 65536;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Gpio.output.enable
@@ -905,6 +1011,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 35;
             Count = Count + 1;
 
             //Image Fill
@@ -914,6 +1021,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 4;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Display
@@ -923,6 +1031,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Show
@@ -932,6 +1041,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image First
@@ -941,6 +1051,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Next
@@ -950,6 +1061,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Prev
@@ -959,6 +1071,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Repeat
@@ -968,6 +1081,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Enable
@@ -977,6 +1091,7 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
             //Image Disable
@@ -986,40 +1101,23 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].MaxParm = 1;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 0;
+            E7422Cmds[Count].Delay = 2500;
             Count = Count + 1;
 
-            //Elecs Comm Open
-            E7422Cmds[Count].Cmd = "load";
+            //txt
+            E7422Cmds[Count].Cmd = "txt";
             E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 6;
-            E7422Cmds[Count].MaxParm = 2;
+            E7422Cmds[Count].Category = 7;
+            E7422Cmds[Count].MaxParm = 3;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 1;
             Count = Count + 1;
 
-            //Elecs Comm Open
-            E7422Cmds[Count].Cmd = "elecs.open";
-            E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 6;
-            E7422Cmds[Count].MaxParm = 2;
-            E7422Cmds[Count].MaxValue = 0;
-            E7422Cmds[Count].Class = 1;
-            Count = Count + 1;
-
-            //Elecs Comm Close
-            E7422Cmds[Count].Cmd = "elecs.close";
-            E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 1;
-            E7422Cmds[Count].MaxParm = 1;
-            E7422Cmds[Count].MaxValue = 0;
-            E7422Cmds[Count].Class = 1;
-            Count = Count + 1;
-
-            //Elecs Comm Close
+            //pause
             E7422Cmds[Count].Cmd = "pause";
             E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 0;
-            E7422Cmds[Count].MaxParm = 1;
+            E7422Cmds[Count].Category = 6;
+            E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 1;
             Count = Count + 1;
@@ -1030,7 +1128,25 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].Category = 3;
             E7422Cmds[Count].MaxParm = 2;
             E7422Cmds[Count].MaxValue = 10000;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            //Scope.Show
+            E7422Cmds[Count].Cmd = "scope.show";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 0;
+            E7422Cmds[Count].MaxParm = 1;
+            E7422Cmds[Count].MaxValue = 0;
             E7422Cmds[Count].Class = 1;
+            Count = Count + 1;
+
+            //Scope.Save
+            E7422Cmds[Count].Cmd = "scope.save";
+            E7422Cmds[Count].Type = 4;
+            E7422Cmds[Count].Category = 1;
+            E7422Cmds[Count].MaxParm = 3;
+            E7422Cmds[Count].MaxValue = 0;
+            E7422Cmds[Count].Class = 2;
             Count = Count + 1;
 
             //System
@@ -1158,8 +1274,8 @@ namespace SL_Tek_Studio_Pro
             //Solomon Bridge Write
             E7422Cmds[Count].Cmd = "ssl.bridge.write";
             E7422Cmds[Count].Type = 1;
-            E7422Cmds[Count].Category = 3;
-            E7422Cmds[Count].MaxParm = 3;
+            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].MaxParm = 4;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 3;
             Count = Count + 1;
@@ -1173,6 +1289,58 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].Class = 3;
             Count = Count + 1;
 
+            //Solomon High MIPI Write
+            E7422Cmds[Count].Cmd = "ssl.hmipi.write";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].MaxParm = 65535;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            E7422Cmds[Count].Cmd = "ssl.mipi.bta";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 0;
+            E7422Cmds[Count].MaxParm = 0;
+            E7422Cmds[Count].MaxValue = 0;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            E7422Cmds[Count].Cmd = "ssl.mipi.ulp";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 0;
+            E7422Cmds[Count].MaxParm = 0;
+            E7422Cmds[Count].MaxValue = 0;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            //Solomon UsbScanner Write
+            E7422Cmds[Count].Cmd = "ssl.usb.write";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].MaxParm = 65535;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            //Solomon Register Write
+            E7422Cmds[Count].Cmd = "ssl.fpga.write";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].MaxParm = 6;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            //Solomon Register Read
+            E7422Cmds[Count].Cmd = "ssl.fpga.read";
+            E7422Cmds[Count].Type = 0;
+            E7422Cmds[Count].Category = 3;
+            E7422Cmds[Count].MaxParm = 3;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
             //Solomon Mipi Read
             E7422Cmds[Count].Cmd = "ssl.mipi.read";
             E7422Cmds[Count].Type = 0;
@@ -1182,11 +1350,38 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].Class = 3;
             Count = Count + 1;
 
+            //Solomon High Mipi Read
+            E7422Cmds[Count].Cmd = "ssl.hmipi.read";
+            E7422Cmds[Count].Type = 0;
+            E7422Cmds[Count].Category = 3;
+            E7422Cmds[Count].MaxParm = 3;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            //Solomon PMIC Write
+            E7422Cmds[Count].Cmd = "ssl.pmic.write";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 3;
+            E7422Cmds[Count].MaxParm = 4;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
             //Solomon I2C Write
             E7422Cmds[Count].Cmd = "ssl.i2c.write";
             E7422Cmds[Count].Type = 1;
             E7422Cmds[Count].Category = 2;
             E7422Cmds[Count].MaxParm = 65535;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 3;
+            Count = Count + 1;
+
+            //Solomon I2C Read
+            E7422Cmds[Count].Cmd = "ssl.i2c.read";
+            E7422Cmds[Count].Type = 0;
+            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].MaxParm = 4;
             E7422Cmds[Count].MaxValue = 255;
             E7422Cmds[Count].Class = 3;
             Count = Count + 1;
@@ -1238,56 +1433,117 @@ namespace SL_Tek_Studio_Pro
             E7422Cmds[Count].Item.Add("burst");
             E7422Cmds[Count].Item.Add("syncevent");
             Count = Count + 1;
+
+            //Temper Standby
+            E7422Cmds[Count].Cmd = "temper";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 6;
+            E7422Cmds[Count].MaxParm = 2;
+            E7422Cmds[Count].MaxValue = 0;
+            E7422Cmds[Count].Class = 4;
+            Count = Count + 1;
+
+            //Temper Set
+            E7422Cmds[Count].Cmd = "temper.set";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 2;
+            E7422Cmds[Count].MaxParm = 2;
+            E7422Cmds[Count].MaxValue = 255;
+            E7422Cmds[Count].Class = 4;
+            Count = Count + 1;
+
+            //Temper write
+            E7422Cmds[Count].Cmd = "temper.send";
+            E7422Cmds[Count].Type = 1;
+            E7422Cmds[Count].Category = 1;
+            E7422Cmds[Count].MaxParm = 2;
+            E7422Cmds[Count].MaxValue = 0;
+            E7422Cmds[Count].Class = 4;
+            Count = Count + 1;
+
+            //Temper write Read
+            E7422Cmds[Count].Cmd = "temper.sendread";
+            E7422Cmds[Count].Type = 2;
+            E7422Cmds[Count].Category = 1;
+            E7422Cmds[Count].MaxParm = 2;
+            E7422Cmds[Count].MaxValue = 0;
+            E7422Cmds[Count].Class = 4;
+            Count = Count + 1;
         }
 
+        /*  1.Exam and Verify the Command Format    */
         public string ExamScript(string[] Commands, ref List<ScriptInfo> ScriptInfo)
         {
-            string ErrResult = null;
-
+            string ErrResult = null, CleanCmd = null; ;
             int ErrCode = 0;
             for (int i = 0; i < Commands.Length; i++)
             {
                 ScriptInfo Info = new ScriptInfo();
                 Info.Command = Commands[i].Trim();
-                if (!ExamCmd(Commands[i].Trim(), ref ErrCode))
+                ErrCode = 0;
+                if (!ExamCmd(Commands[i].Trim(), ref CleanCmd, ref ErrCode))
                 {
-                    if (ErrCode == ERRELECSCMD)
+                    Info.Index = ElecsOpt;
+                    if (ErrCode == ERRCMD)
                     {
-                        Info.Message = this.ErrResult(Commands[i].Trim(), i);
+                        Info.Message = this.ErrResult(Commands[i].Trim(), i+1);
                         ErrResult += Info.Message;
-                        Info.Result = false;
-                    }else if(ErrCode == ERRELECSPARM)
-                    {
-                        Info.Message = this.ErrResult(Commands[i].Trim(), i);
-                        ErrResult += Info.Message;
-                        Info.Result = false;
+                        Info.Result = 3;
                     }
-                    else
-                        Info.Result = true;
+                    else if (ErrCode == ERRPARM)
+                    {
+                        Info.Message = this.ErrResult(Commands[i].Trim(), i + 1);
+                        ErrResult += Info.Message;
+                        Info.Result = 4;
+                    }
+                    else if(ErrCode == WARNTOKEN) //Warning
+                    {
+                        Info.Message = this.WarnResult(Commands[i].Trim(), i + 1); 
+                        ErrResult += Info.Message;
+                        Info.Result = 1;
+                    }
+                    else //Comment
+                    {
+                        Info.Message = this.CommentResult(Commands[i].Trim(), i + 1);
+                        ErrResult += Info.Message;
+                        Info.Result = 2;
+                    }
                 }
                 else
-                    Info.Result = true;
-
+                {
+                    Info.Message = this.PassResult(Commands[i].Trim(), i + 1);
+                    ErrResult += Info.Message;
+                    Info.Command = CleanCmd;
+                    Info.Index = ElecsOpt;
+                    Info.Result = 0;
+                }
 
                 ScriptInfo.Add(Info);
             }
             return ErrResult;
         }
 
-        public bool ExamCmd(string Cmd, ref int ErrCode)
+        public byte ExamCmd(ScriptInfo ScriptCmd)
+        {
+            if (ScriptCmd.Result == 0 || ScriptCmd.Result == 1)
+            {
+                SendCommand = ScriptCmd.Command;
+                ElecsOpt = ScriptCmd.Index;
+            }
+            return ScriptCmd.Result;
+        }
+
+        public bool ExamCmd(string Cmd,ref string CleanCmd, ref int ErrCode)
         {
             bool ret = true;
-            string tmpCmd = null;
-            if (CleanComment(Cmd, ref ErrCode, ref tmpCmd))
+            if (CleanComment(Cmd, ref CleanCmd))
             {
-                if (!VerifyToken(tmpCmd)) { ErrCode = 1; return false; }
-                if (!VerifyParameter(tmpCmd)) {ErrCode = 2;return false;}
-                if (!VerifyWarning(tmpCmd)) { ErrCode = 3; }
-                SendCommand = tmpCmd + SplitLine;
-                ErrCode = 0;
+                if (!VerifyToken(CleanCmd)) { ErrCode = ERRCMD; return false; }  //Verify Main Token
+                if (!VerifyParameter(CleanCmd)) { ErrCode = ERRPARM; return false; }   //Verify Parameter
+                if (!VerifyWarning(CleanCmd)) { ErrCode = WARNTOKEN; }
             }
             else
-                return false;
+                ret = false;
 
             return ret;
         }
@@ -1328,10 +1584,19 @@ namespace SL_Tek_Studio_Pro
                 case 2:
                     if (Cmds.Length == 3)
                     {
-                        if (GetCmdType() == 1 || GetCmdType() == 2)
-                            Command = Cmds[2].Trim();
-                        if (GetCmdType() == 3)
-                            Command = string.Concat(Cmds[1], " ", Cmds[2]).Trim();
+                        switch (GetCmdType())
+                        {
+                            case 1:
+                            case 2:
+                            case 4:
+                                Command = Cmds[2].Trim();
+                                break;
+                            case 3:
+                                Command = string.Concat(Cmds[1], " ", Cmds[2]).Trim();
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     break;
                 default:
@@ -1340,16 +1605,19 @@ namespace SL_Tek_Studio_Pro
             }
             return Command;
         }
-
+        public int GetCmdDelay() { return this.E7422Cmds[ElecsOpt].Delay; }
         public byte GetCmdClass() { return this.E7422Cmds[ElecsOpt].Class; }
         public byte GetCmdType() { return this.E7422Cmds[ElecsOpt].Type; }
         public byte GetCmdCategory() { return this.E7422Cmds[ElecsOpt].Category; }
         public byte GetCmdReg() { return this.E7422Cmds[ElecsOpt].Reg; }
-        public ElecsCmd GetElecsType() { return E7422Cmds[this.ElecsOpt]; }
+        public ElecsCmd GetElecsClass() { return E7422Cmds[ElecsOpt]; }
         public string ReadInfo(int Line, string Result){return READMSG + "[" + Line.ToString() + "]: " + Result.Trim() + SplitLine;}
         public string ReadInfo(ElecsResult Result){ return READMSG + "[" + Result.Line.ToString() + "]: " + Result.Result + SplitLine; }
-        public string ErrResult(string Info, int Line){return ERRMSG + " : " + " " + Info + " (Line: " + Line.ToString() + " )" + SplitLine;}
-        
+        public string ErrResult(string Info, int Line){return " (Line: " + Line.ToString() + " )  " + ERRMSG + " : " + " " + Info +  SplitLine;}
+        public string WarnResult(string Info, int Line) { return " (Line: " + Line.ToString() + " )  " + WARNMSG + " : " + " " + Info + SplitLine; }
+        public string CommentResult(string Info, int Line) { return " (Line: " + Line.ToString() + " )  "+COMMENTMSG + " : " + " " + Info  + SplitLine; }
+        public string PassResult(string Info, int Line) { return " (Line: " + Line.ToString() + " )  " + PASSMSG + " : " + " " + Info + SplitLine; }
+
         private ArrayList MergeElecsCmds(string Command)
         {
             ArrayList eCmdList = new ArrayList();
@@ -1364,21 +1632,14 @@ namespace SL_Tek_Studio_Pro
             return eCmdList;
         }
 
-        private bool CleanComment(string Cmd, ref int ErrCode, ref string mCmd)
+        private bool CleanComment(string Cmd, ref string mCmd)
         {
             bool ret = true;
-            int Addr = 0;
-            if (string.IsNullOrEmpty(Cmd)) {  return false; }
-            int WellheadAddr = Cmd.IndexOf(Comment);
-            int SlashAddr = Cmd.IndexOf(CommentSlash);
-
-            if (WellheadAddr > 0 && SlashAddr > 0) ret =  false;
-            if (WellheadAddr > 0 && SlashAddr < 0) Addr = WellheadAddr;
-            if (WellheadAddr < 0 && SlashAddr > 0) Addr = SlashAddr;
-
-            if (WellheadAddr == 0 || SlashAddr == 0) { ret = false; }
-            if (WellheadAddr < 0 && SlashAddr < 0) { mCmd = Cmd.Trim(); }
-            if (Addr > 0) { mCmd = Cmd.Substring(0, Addr).Trim(); }
+            if (string.IsNullOrEmpty(Cmd))   return false; 
+            int CommentAddr = Cmd.IndexOf(Comment);
+            if (CommentAddr < 0) { mCmd = Cmd.Trim();  } // No Comment
+            if (CommentAddr == 0) ret =  false;
+            if (CommentAddr > 0) mCmd = Cmd.Substring(0, CommentAddr).Trim(); 
 
             return ret;
         }
@@ -1400,11 +1661,12 @@ namespace SL_Tek_Studio_Pro
             return ret;
         }
 
+        /* warning If the value occurs error, Range: 0~255*/
         private bool VerifyWarning(string Command)
         {
             ArrayList eCmdList = MergeElecsCmds(Command);
             ElecsCmd optElecs = E7422Cmds[ElecsOpt];
-            SL_IO_Util SlUtil = new SL_IO_Util();
+            SL_Digital_Util SlUtil = new SL_Digital_Util();
             int Value = 0;
             int Count = eCmdList.Count;
 
@@ -1425,7 +1687,7 @@ namespace SL_Tek_Studio_Pro
             bool VerifyParm = true, VerifyItem = true ;
             ArrayList eCmdList = MergeElecsCmds(Command);
             ElecsCmd optElecs = E7422Cmds[ElecsOpt];
-            SL_IO_Util SlUtil = new SL_IO_Util();
+            SL_Digital_Util SlUtil = new SL_Digital_Util();
             int Value = 0;
             float fValue = 0;
             switch (optElecs.Category)
@@ -1476,6 +1738,9 @@ namespace SL_Tek_Studio_Pro
                     break;
                 case 6:
                     if (eCmdList.Count != optElecs.MaxParm) VerifyParm = false;
+                    break;
+                case 7:
+                    if (eCmdList.Count < 2 || eCmdList.Count > optElecs.MaxParm) VerifyParm = false;
                     break;
                 default:
                     break;

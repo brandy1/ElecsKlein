@@ -5,10 +5,17 @@ using System.Text;
 
 namespace SL_Tek_Studio_Pro
 {
-    /*
-     * List Usb Device and get the usb devices according to my settings.
-     * Date:2016/10/04
-     */
+    public class SLBridgeInfo
+    {
+        public SLBridgeInfo(string DeviceInfo, string description)
+        {
+            this.DeviceInfo = DeviceInfo;
+            this.Description = description;
+        }
+        public string DeviceInfo { get; private set; }
+        public string Description { get; private set; }
+    }
+
     class SL_Device_Util
     {
         private  List<USBDeviceInfo> devices = new List<USBDeviceInfo>();
@@ -37,9 +44,9 @@ namespace SL_Tek_Studio_Pro
             return devices.Count;
         }
 
-        public List<ScDeviceInfo> FindScDevice(string UserDevice)
+        public List<SLDeviceInfo> FindScDevice(string UserDevice)
         {
-            List<ScDeviceInfo> Devices = new List<ScDeviceInfo>();
+            List<SLDeviceInfo> Devices = new List<SLDeviceInfo>();
 
             foreach (USBDeviceInfo deviceinfo in devices)
             {
@@ -48,15 +55,15 @@ namespace SL_Tek_Studio_Pro
                      deviceinfo.Description.Contains(DEVICE_SC) ||
                      deviceinfo.Description.Contains(UserDevice)))
                 {
-                    Devices.Add(new ScDeviceInfo(deviceinfo.Description, deviceinfo.DeviceID));
+                    Devices.Add(new SLDeviceInfo(deviceinfo.Description, deviceinfo.DeviceID));
                 }
             }
             return Devices;
         }
 
-        public List<ScDeviceInfo>  FindScDevice()
+        public List<SLDeviceInfo>  FindScDevice()
         {
-            List<ScDeviceInfo> Devices = new List<ScDeviceInfo>();
+            List<SLDeviceInfo> Devices = new List<SLDeviceInfo>();
 
             foreach(USBDeviceInfo deviceinfo in devices)
             {
@@ -64,13 +71,13 @@ namespace SL_Tek_Studio_Pro
                     (deviceinfo.Description.Contains(DEVICE_3R) ||
                     deviceinfo.Description.Contains(DEVICE_SC)))
                 {
-                    Devices.Add(new ScDeviceInfo(deviceinfo.Description,deviceinfo.DeviceID));
+                    Devices.Add(new SLDeviceInfo(deviceinfo.Description,deviceinfo.DeviceID));
                 }
             }         
             return Devices;
         }
 
-        public bool DeviceCompare(ScDeviceInfo[] SysDevice , ScDeviceInfo[] TimerDevice)
+        public bool DeviceCompare(SLDeviceInfo[] SysDevice , SLDeviceInfo[] TimerDevice)
         {
             if (SysDevice.Length != TimerDevice.Length) return false;
             for(int i = 0;i<SysDevice.Length;i++)
@@ -101,9 +108,9 @@ namespace SL_Tek_Studio_Pro
         public string getStrPid() { return this.Pid; }
         public string getRootDevInfo(string devInfo) { return devInfo.Substring(10, devInfo.Length - 10); }
 
-        public class ScDeviceInfo
+        public class SLDeviceInfo
         {
-            public ScDeviceInfo(string deviceID, string description)
+            public SLDeviceInfo(string deviceID, string description)
             {
                 this.DeviceID = deviceID;
                 this.Description = description;
